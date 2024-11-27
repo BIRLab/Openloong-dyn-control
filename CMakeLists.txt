@@ -6,6 +6,10 @@ IF (NOT CMAKE_BUILD_TYPE)
 ENDIF ()
 add_compile_options(-std=c++17)
 
+# 设置gcc和g++的版本
+set(CMAKE_C_COMPILER gcc-11)
+set(CMAKE_CXX_COMPILER g++-11)
+
 #系统eigen版本可能老旧，使用自供eigen
 set(dirEigen "third_party/eigen3")
 set(dirGlfw "third_party/glfw")
