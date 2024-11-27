@@ -8,11 +8,10 @@ Feel free to use in any purpose, and cite OpenLoong-Dynamics-Control in any styl
 #pragma once
 
 #include <mujoco/mujoco.h>
-#include "data_bus.h"
 #include <string>
-#include <vector>
+#include "robot_interface.h"
 
-class MJ_Interface {
+class MJ_Interface : RobotInterface {
 public:
     int jointNum{0};
     std::vector<double> motor_pos;
@@ -39,9 +38,9 @@ public:
     const std::string accSensorName="baselink-baseAcc";
 
     MJ_Interface(mjModel *mj_modelIn, mjData  *mj_dataIn);
-    void updateSensorValues();
-    void setMotorsTorque(std::vector<double> &tauIn);
-    void dataBusWrite(DataBus &busIn);
+    void updateSensorValues() override;
+    void setMotorsTorque(std::vector<double> &tauIn) override;
+    void dataBusWrite(DataBus &busIn) override;
 
 private:
     mjModel *mj_model;

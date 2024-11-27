@@ -33,7 +33,6 @@ include_directories(${allInc})
 include_directories("algorithm")
 include_directories("common")
 include_directories("math")
-include_directories("sim_interface")
 
 message(${CMAKE_SYSTEM_PROCESSOR})
 if(${CMAKE_CXX_COMPILER} MATCHES "aarch64" OR ${CMAKE_SYSTEM_PROCESSOR} MATCHES "aarch64")
@@ -44,8 +43,8 @@ endif()
 link_directories(${allLib})
 
 file(GLOB C_SOURCES *.c)
-file(GLOB CPP_SOURCES *.cpp algorithm/*.cpp common/*.cpp math/*.cpp sim_interface/*.cpp)
-file(GLOB HEADER_FILES *.h algorithm/*.h common/*.h math/*.h sim_interface/*.h)
+file(GLOB CPP_SOURCES *.cpp algorithm/*.cpp common/*.cpp math/*.cpp)
+file(GLOB HEADER_FILES *.h algorithm/*.h common/*.h math/*.h)
 set(SOURCES ${C_SOURCES} ${CPP_SOURCES} ${HEADER_FILES})
 
 #链接库
@@ -79,27 +78,42 @@ message(${sysCoreLibs})
 add_library(core ${SOURCES})
 target_link_libraries(core ${sysCoreLibs} pthread)
 
+# 仿真interface
+file(GLOB SIM_INTERFACE_SRCS sim_interface/*.cpp)
+add_library(sim_interface ${SIM_INTERFACE_SRCS})
+target_link_libraries(sim_interface PRIVATE mujoco ${sysSimLibs})
+target_include_directories(sim_interface INTERFACE "sim_interface")
+
 #生成仿真可执行文件
 add_executable(walk_mpc_wbc demo/walk_mpc_wbc.cpp)
-target_link_libraries(walk_mpc_wbc core mujoco ${sysSimLibs} dl)
+target_link_libraries(walk_mpc_wbc core sim_interface)
 
 add_executable(walk_wbc demo/walk_wbc.cpp)
-target_link_libraries(walk_wbc core mujoco ${sysSimLibs} dl)
+target_link_libraries(walk_wbc core sim_interface)
 
 add_executable(jump_mpc demo/jump_mpc.cpp)
-target_link_libraries(jump_mpc core mujoco ${sysSimLibs} dl)
+target_link_libraries(jump_mpc core sim_interface)
 
 add_executable(float_control demo/float_control.cpp)
-target_link_libraries(float_control core mujoco ${sysSimLibs} dl)
+target_link_libraries(float_control core sim_interface)
 
 add_executable(wbc_speed_test demo/walk_wbc_speed_test.cpp)
-target_link_libraries(wbc_speed_test core mujoco ${sysSimLibs} dl)
+target_link_libraries(wbc_speed_test core sim_interface)
 
 add_executable(walk_wbc_joystick demo/walk_wbc_joystick.cpp)
-target_link_libraries(walk_wbc_joystick core mujoco ${sysSimLibs} dl)
+target_link_libraries(walk_wbc_joystick core sim_interface)
 
 add_executable(walk_mpc_wbc_joystick demo/walk_mpc_wbc_joystick.cpp)
-target_link_libraries(walk_mpc_wbc_joystick core mujoco ${sysSimLibs} dl)
+target_link_libraries(walk_mpc_wbc_joystick core sim_interface)
 
 add_executable(walk_wbc_staircase demo/walk_wbc_staircase.cpp)
-target_link_libraries(walk_wbc_staircase core mujoco ${sysSimLibs} dl)
+target_link_libraries(walk_wbc_staircase core sim_interface)
+
+# 实机interface
+add_subdirectory(hw_interface)
+
+# 实机控制器可执行文件
+aux_source_directory(robot ROBOT_SRCS)
+add_executable(main ${ROBOT_SRCS})
+target_include_directories(main PRIVATE robot)
+target_link_libraries(main PRIVATE core hw_interface)
