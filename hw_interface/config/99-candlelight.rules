@@ -1,0 +1,9 @@
+# Use udev rules to assign each serial number a fixed socketcan device name.
+
+# 1. Example
+# SUBSYSTEM=="net", ATTRS{idVendor}=="1d50", ATTRS{idProduct}=="606f", ATTRS{serial}=="111111111111", NAME="robot_can0"
+# SUBSYSTEM=="net", ATTRS{idVendor}=="1d50", ATTRS{idProduct}=="606f", ATTRS{serial}=="222222222222", NAME="robot_can1"
+
+# 2. Installation
+# Copy this file to /etc/udev/rules.d/99-candlelight.rules and run the following commands:
+# sudo udevadm control --reload-rules && sudo systemctl restart systemd-udevd && sudo udevadm trigger
