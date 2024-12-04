@@ -11,7 +11,6 @@
 #include <unordered_map>
 #include <cmath>
 #include <thread>
-#include <unistd.h>
 
 using namespace std::chrono_literals;
 
@@ -153,7 +152,7 @@ public:
                     all_ready = false;
             }
         }
-        usleep(500000);
+        std::this_thread::sleep_for(500ms);
     }
 
     void updateSensorValues() {

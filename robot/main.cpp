@@ -1,6 +1,7 @@
 #include "HW_Interface.h"
-#include <unistd.h>
 #include <thread>
+
+using namespace std::chrono_literals;
 
 void robot_main(HW_Interface& hw_interface) {
     DataBus RobotState(17);
@@ -9,7 +10,7 @@ void robot_main(HW_Interface& hw_interface) {
         hw_interface.updateSensorValues();
         hw_interface.setMotorsTorque(tq);
         hw_interface.dataBusWrite(RobotState);
-        usleep(1000);
+        std::this_thread::sleep_for(1ms);
     }
 }
 
