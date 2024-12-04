@@ -129,8 +129,12 @@ public:
         for (const auto& d : desc) {
             auto it = buses.find(d.bus_name);
             if (it == buses.end()) {
-                auto r = buses.emplace(d.bus_name, std::make_shared<MotorBus>(this, d));
-                it = r.first;
+                try {
+                    auto r = buses.emplace(d.bus_name, std::make_shared<MotorBus>(this, d));
+                    it = r.first;
+                } catch (std::system_error const& ex) {
+                    throw std::runtime_error(ex.what() + std::string(" - (" + d.bus_name + ")"));
+                }
             }
             drivers[d.global_id] = std::make_shared<MotorDriver>(exec, it->second->master, d.node_id, d.encoder, d.offset);
         }
