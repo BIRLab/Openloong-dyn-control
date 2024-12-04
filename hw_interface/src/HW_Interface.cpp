@@ -235,17 +235,7 @@ private:
 
 HW_Interface::HW_Interface() {
     std::vector<MotorDescription> desc {
-        {"robot_can0", 1, 0, 524288, 262143},
-        {"robot_can0", 2, 1, 524288, 262143},
-        {"robot_can1", 3, 2, 524288, 262143},
-        {"robot_can1", 4, 3, 524288, 262143},
-        {"robot_can1", 5, 4, 524288, 262143},
-        {"robot_can2", 6, 5, 524288, 262143},
-        {"robot_can2", 7, 6, 524288, 262143},
-        {"robot_can3", 8, 7, 524288, 262143},
-        {"robot_can3", 9, 8, 524288, 262143},
-        {"robot_can3", 10, 9, 524288, 262143},
-        {"robot_can2", 11, 10, 524288, 262143}
+        #include "motor_descriptions.h"
     };
     m = std::make_shared<MotorManager>(desc);
 }
