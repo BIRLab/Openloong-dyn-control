@@ -3,6 +3,7 @@
 set -e
 
 add-apt-repository -y ppa:lely/ppa
+add-apt-repository -y ppa:ubuntu-toolchain-r/test
 apt update
 apt install -y \
     git \
