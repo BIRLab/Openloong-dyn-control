@@ -2,7 +2,6 @@
 
 #include "robot_interface.h"
 #include <memory>
-#include <thread>
 
 class MotorManager;
 
@@ -15,6 +14,5 @@ public:
     void dataBusWrite(DataBus &busIn) override;
 
 private:
-    std::thread loop_thread;
     std::shared_ptr<MotorManager> m;
 };

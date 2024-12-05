@@ -164,10 +164,10 @@ public:
         for (const auto& b : buses) {
             b.second->master.Reset();
         }
-    }
-
-    void run() {
-        loop.run();
+        loop_thread = std::thread([this](){
+            lely::ev::FiberThread ft;
+            loop.run();
+        });
     }
 
     void stop() {
@@ -176,6 +176,7 @@ public:
         }
         wait_ready(false);
         ctx.shutdown();
+        loop_thread.join();
     }
 
     void wait_ready(bool target = true) {
@@ -246,6 +247,7 @@ private:
     lely::ev::Loop loop;
     lely::ev::Executor exec;
     lely::io::Timer timer;
+    std::thread loop_thread;
 
     struct MotorBus {
         MotorBus(MotorManager *m, const MotorDescription &d) : controller(d.bus_name.c_str()),
@@ -269,18 +271,11 @@ HW_Interface::HW_Interface() {
     };
 
     m = std::make_shared<MotorManager>(desc);
-
-    loop_thread = std::thread([this](){
-        lely::ev::FiberThread ft;
-        m->run();
-    });
-
     m->wait_ready();
 }
 
 HW_Interface::~HW_Interface() {
     m->stop();
-    loop_thread.join();
 }
 
 void HW_Interface::updateSensorValues() {
