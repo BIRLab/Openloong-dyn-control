@@ -28,9 +28,14 @@ udev_rules = """# Copy this file to /etc/udev/rules.d/99-candlelight.rules and r
 motor_descriptions = []
 
 for bus_name, bus_config in bus_yaml['buses'].items():
-    udev_rules += f'\nSUBSYSTEM=="net", ATTRS{{idVendor}}=="1d50", ATTRS{{idProduct}}=="606f", ATTRS{{serial}}=="{bus_config['serial_number']}", NAME="{bus_name}"'
+    serial_number = bus_config['serial_number']
+    udev_rules += f'\nSUBSYSTEM=="net", ATTRS{{idVendor}}=="1d50", ATTRS{{idProduct}}=="606f", ATTRS{{serial}}=="{serial_number}", NAME="{bus_name}"'
     for node in bus_config['nodes']:
-        motor_descriptions.append(f'{{"{bus_name}", {node['node_id']}, {node['global_id']}, {node['encoder']}, {node['offset']}}},')
+        node_id = node['node_id']
+        global_id = node['global_id']
+        encoder = node['encoder']
+        offset = node['offset']
+        motor_descriptions.append(f'{{"{bus_name}", {node_id}, {global_id}, {encoder}, {offset}}},')
 
 with open(os.path.join(out_dir, '99-candlelight.rules'), 'w') as f:
     f.write(udev_rules)
