@@ -1,5 +1,6 @@
 #include "HW_Interface.h"
 #include <lely/ev/loop.hpp>
+#include <lely/ev/fiber_exec.hpp>
 #include <lely/io2/linux/can.hpp>
 #include <lely/io2/posix/poll.hpp>
 #include <lely/io2/sys/io.hpp>
@@ -11,6 +12,7 @@
 #include <unordered_map>
 #include <cmath>
 #include <thread>
+#include <mutex>
 
 using namespace std::chrono_literals;
 
@@ -23,6 +25,7 @@ public:
     const int32_t offset;
 
     // motor feedback
+    std::mutex feedback_mutex;
     double position{};        // rad
     double velocity{};        // rad / s
     double current{};         // A
@@ -30,11 +33,20 @@ public:
 
     bool ready{false};
 
-    void UpdateFeedback() {
+    void updateFeedback() {
+        std::scoped_lock lock(feedback_mutex);
         position = 2 * M_PI * (position_raw - offset) / encoder;
         velocity = 2 * M_PI * velocity_raw / encoder;
         current = (double)current_raw * (double)max_current / 1000.0;
         torque = (double)torque_raw / 1000.0;
+    }
+
+    void readFeedback(double& position_out, double& velocity_out, double& current_out, double& torque_out) {
+        std::scoped_lock lock(feedback_mutex);
+        position_out = position;
+        velocity_out = velocity;
+        current_out = current;
+        torque_out = torque;
     }
 
     void sendCommand(double target_current) {
@@ -77,6 +89,17 @@ private:
             // read motor rated current
             max_current = Wait(AsyncRead<uint32_t>(0x6075, 0));
 
+            res({});
+        } catch (lely::canopen::SdoError& e) {
+            res(e.code());
+        }
+    }
+
+    void OnDeconfig(std::function<void(std::error_code ec)> res) noexcept override {
+        try {
+            Wait(AsyncWrite<uint32_t>(0x6081, 0, 0));
+            Wait(AsyncWrite<uint16_t>(0x6040, 0, 6));
+            ready = false;
             res({});
         } catch (lely::canopen::SdoError& e) {
             res(e.code());
@@ -147,12 +170,20 @@ public:
         loop.run();
     }
 
-    void wait_ready() {
+    void stop() {
+        for (const auto& b : buses) {
+            b.second->master.AsyncDeconfig();
+        }
+        wait_ready(false);
+        ctx.shutdown();
+    }
+
+    void wait_ready(bool target = true) {
         bool all_ready = false;
         while (!all_ready) {
             all_ready = true;
             for (const auto& m : drivers) {
-                if (!m.second->ready)
+                if (m.second->ready != target)
                     all_ready = false;
             }
         }
@@ -161,7 +192,7 @@ public:
 
     void updateSensorValues() {
         for (const auto& d : drivers) {
-            d.second->UpdateFeedback();
+            d.second->updateFeedback();
         }
     }
 
@@ -185,9 +216,8 @@ public:
         busIn.motors_tor_cur.resize(max_motor_id);
 
         for (const auto& m : drivers) {
-            busIn.motors_pos_cur[m.first] = m.second->position;
-            busIn.motors_vel_cur[m.first] = m.second->velocity;
-            busIn.motors_tor_cur[m.first] = m.second->current;
+            double torque_sensor;
+            m.second->readFeedback(busIn.motors_pos_cur[m.first], busIn.motors_vel_cur[m.first], busIn.motors_tor_cur[m.first], torque_sensor);
         }
 
         busIn.rpy[0] = 0;
@@ -237,7 +267,20 @@ HW_Interface::HW_Interface() {
     std::vector<MotorDescription> desc {
         #include "motor_descriptions.h"
     };
+
     m = std::make_shared<MotorManager>(desc);
+
+    loop_thread = std::thread([this](){
+        lely::ev::FiberThread ft;
+        m->run();
+    });
+
+    m->wait_ready();
+}
+
+HW_Interface::~HW_Interface() {
+    m->stop();
+    loop_thread.join();
 }
 
 void HW_Interface::updateSensorValues() {
@@ -250,12 +293,4 @@ void HW_Interface::setMotorsTorque(std::vector<double> &tauIn) {
 
 void HW_Interface::dataBusWrite(DataBus &busIn) {
     m->dataBusWrite(busIn);
-}
-
-void HW_Interface::run() {
-    m->run();
-}
-
-void HW_Interface::wait_ready() {
-    m->wait_ready();
 }
