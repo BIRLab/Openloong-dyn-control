@@ -15,8 +15,8 @@ with open(bus_file, 'r') as f:
 
 out_yaml = {'options': bus_yaml['options'], 'master': bus_yaml['master']}
 for node_name, node_config in bus_yaml['nodes'].items():
-    node_config.update(bus_yaml['defaults'])
-    out_yaml[node_name] = node_config
+    out_yaml[node_name] = bus_yaml['defaults']
+    out_yaml[node_name].update(node_config)
 
 with open(os.path.join(out_dir, 'bus.yml'), 'w') as f:
     f.write(yaml.dump(out_yaml))
