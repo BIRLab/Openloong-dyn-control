@@ -18,11 +18,12 @@ using namespace std::chrono_literals;
 
 class MotorDriver : public lely::canopen::FiberDriver {
 public:
-    explicit MotorDriver(ev_exec_t* exec, lely::canopen::AsyncMaster& master, uint8_t id, int32_t encoder, int32_t offset) : lely::canopen::FiberDriver(exec, master, id), encoder{encoder}, offset{offset} { }
+    explicit MotorDriver(ev_exec_t* exec, lely::canopen::AsyncMaster& master, uint8_t id, int32_t motor_encoder, int32_t motor_offset, bool motor_reverse) : lely::canopen::FiberDriver(exec, master, id), encoder{motor_encoder}, offset{motor_offset}, reverse{motor_reverse ? -1.0 : 1.0} { }
 
     // constance
     const int32_t encoder;
     const int32_t offset;
+    const double reverse;
 
     // motor feedback
     std::mutex feedback_mutex;
@@ -35,10 +36,10 @@ public:
 
     void updateFeedback() {
         std::scoped_lock lock(feedback_mutex);
-        position = 2 * M_PI * (position_raw - offset) / encoder;
-        velocity = 2 * M_PI * velocity_raw / encoder;
-        current = (double)current_raw * (double)max_current / 1000.0;
-        torque = (double)torque_raw / 1000.0;
+        position = reverse * 2 * M_PI * (position_raw - offset) / encoder;
+        velocity = reverse * 2 * M_PI * velocity_raw / encoder;
+        current = reverse * (double)current_raw * (double)max_current / 1000.0;
+        torque = reverse * (double)torque_raw / 1000.0;
     }
 
     void readFeedback(double& position_out, double& velocity_out, double& current_out, double& torque_out) {
@@ -50,7 +51,7 @@ public:
     }
 
     void sendCommand(double target_current) {
-        tpdo_mapped[0x6071][0] = (int16_t)(1000000.0 * target_current / max_current);
+        tpdo_mapped[0x6071][0] = (int16_t)(reverse * 1000000.0 * target_current / max_current);
         tpdo_mapped[0x6071][0].WriteEvent();
     }
 
@@ -144,6 +145,7 @@ struct MotorDescription {
     uint8_t global_id;
     int32_t encoder;
     int32_t offset;
+    bool reverse;
 };
 
 class MotorManager {
@@ -159,7 +161,7 @@ public:
                     throw std::runtime_error(ex.what() + std::string(" - (" + d.bus_name + ")"));
                 }
             }
-            drivers[d.global_id] = std::make_shared<MotorDriver>(exec, it->second->master, d.node_id, d.encoder, d.offset);
+            drivers[d.global_id] = std::make_shared<MotorDriver>(exec, it->second->master, d.node_id, d.encoder, d.offset, d.reverse);
         }
         for (const auto& b : buses) {
             b.second->master.Reset();

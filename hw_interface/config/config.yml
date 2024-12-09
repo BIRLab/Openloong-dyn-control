@@ -74,23 +74,23 @@ buses:
   robot_can0:
     serial_number: 208235C55016
     nodes:
-      - { node_id: 6, global_id: 0, encoder: 524288, offset: 262143 }
-      - { node_id: 7, global_id: 1, encoder: 524288, offset: 262143 }
+      - { node_id: 6, global_id: 0, encoder: 524288, offset: 262143, reverse: false }
+      - { node_id: 7, global_id: 1, encoder: 524288, offset: 262143, reverse: false }
   robot_can1:
     serial_number: 208135BF5016
     nodes:
-      - { node_id: 8, global_id: 2, encoder: 524288, offset: 262143 }
-      - { node_id: 9, global_id: 3, encoder: 524288, offset: 262143 }
-      - { node_id: 10, global_id: 4, encoder: 524288, offset: 262143 }
+      - { node_id: 8, global_id: 2, encoder: 524288, offset: 262143, reverse: true }
+      - { node_id: 9, global_id: 3, encoder: 524288, offset: 262143, reverse: true }
+      - { node_id: 10, global_id: 4, encoder: 524288, offset: 262143, reverse: false }
   robot_can2:
     serial_number: 2080356D5016
     nodes:
-      - { node_id: 3, global_id: 7, encoder: 524288, offset: 262143 }
-      - { node_id: 4, global_id: 8, encoder: 524288, offset: 262143 }
-      - { node_id: 5, global_id: 9, encoder: 524288, offset: 262143 }
+      - { node_id: 3, global_id: 7, encoder: 524288, offset: 262143, reverse: false }
+      - { node_id: 4, global_id: 8, encoder: 524288, offset: 262143, reverse: false }
+      - { node_id: 5, global_id: 9, encoder: 524288, offset: 262143, reverse: false }
   robot_can3:
     serial_number: 208135895016
     nodes:
-      - { node_id: 1, global_id: 5, encoder: 524288, offset: 262143 }
-      - { node_id: 2, global_id: 6, encoder: 524288, offset: 262143 }
-      - { node_id: 11, global_id: 10, encoder: 524288, offset: 262143 }
+      - { node_id: 1, global_id: 5, encoder: 524288, offset: 262143, reverse: false }
+      - { node_id: 2, global_id: 6, encoder: 524288, offset: 262143, reverse: false }
+      - { node_id: 11, global_id: 10, encoder: 524288, offset: 262143, reverse: false }

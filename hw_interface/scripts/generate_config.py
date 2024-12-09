@@ -35,7 +35,8 @@ for bus_name, bus_config in bus_yaml['buses'].items():
         global_id = node['global_id']
         encoder = node['encoder']
         offset = node['offset']
-        motor_descriptions.append(f'{{"{bus_name}", {node_id}, {global_id}, {encoder}, {offset}}},')
+        reverse = 'true' if node['reverse'] else 'false'
+        motor_descriptions.append(f'{{"{bus_name}", {node_id}, {global_id}, {encoder}, {offset}, {reverse}}},')
 
 with open(os.path.join(out_dir, '99-candlelight.rules'), 'w') as f:
     f.write(udev_rules)
