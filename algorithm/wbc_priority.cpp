@@ -62,18 +62,18 @@ WBC_priority::WBC_priority(int model_nv_In, int QP_nvIn, int QP_ncIn, double miu
     kin_tasks_walk.addTask("RedundantJoints");
     kin_tasks_walk.addTask("PxPy");
     kin_tasks_walk.addTask("SwingLeg");
-    kin_tasks_walk.addTask("HandTrack");
-    kin_tasks_walk.addTask("HandTrackJoints");
+    // kin_tasks_walk.addTask("HandTrack");
+    // kin_tasks_walk.addTask("HandTrackJoints");
     kin_tasks_walk.addTask("PosRot");
 
-    std::vector<std::string> taskOrder_walk;
+    std::vector<std::string> taskOrder_walk;//优先级
     taskOrder_walk.emplace_back("RedundantJoints");
     taskOrder_walk.emplace_back("static_Contact");
 //    taskOrder_walk.emplace_back("Roll_Pitch_Yaw_Pz");
 //    taskOrder_walk.emplace_back("PxPy");
     taskOrder_walk.emplace_back("PosRot");
     taskOrder_walk.emplace_back("SwingLeg");
-    taskOrder_walk.emplace_back("HandTrackJoints");
+    // taskOrder_walk.emplace_back("HandTrackJoints");
 
 
     kin_tasks_walk.buildPriority(taskOrder_walk);
@@ -81,13 +81,13 @@ WBC_priority::WBC_priority(int model_nv_In, int QP_nvIn, int QP_ncIn, double miu
     ///-------- stand ------------
     kin_tasks_stand.addTask("static_Contact");
     kin_tasks_stand.addTask("CoMTrack");
-    kin_tasks_stand.addTask("HandTrackJoints");
-    kin_tasks_stand.addTask("HipRPY");
-    kin_tasks_stand.addTask("HeadRP");
-    kin_tasks_stand.addTask("Pz");
-    kin_tasks_stand.addTask("CoMXY_HipRPY");
-    kin_tasks_stand.addTask("Roll_Pitch_Yaw");
-    kin_tasks_stand.addTask("fixedWaist");
+    // kin_tasks_stand.addTask("HandTrackJoints");
+     kin_tasks_stand.addTask("HipRPY");
+    // kin_tasks_stand.addTask("HeadRP");
+     kin_tasks_stand.addTask("Pz");
+     kin_tasks_stand.addTask("CoMXY_HipRPY");
+     kin_tasks_stand.addTask("Roll_Pitch_Yaw");
+     kin_tasks_stand.addTask("fixedWaist");
 
 
     std::vector<std::string> taskOrder_stand;
@@ -96,10 +96,10 @@ WBC_priority::WBC_priority(int model_nv_In, int QP_nvIn, int QP_ncIn, double miu
     taskOrder_stand.emplace_back("static_Contact");
 //    taskOrder_stand.emplace_back("CoMTrack");
 //    taskOrder_stand.emplace_back("HipRPY");
-    taskOrder_stand.emplace_back("CoMXY_HipRPY");
-    taskOrder_stand.emplace_back("Pz");
-    taskOrder_stand.emplace_back("HandTrackJoints");
-    taskOrder_stand.emplace_back("HeadRP");
+     taskOrder_stand.emplace_back("CoMXY_HipRPY");
+     taskOrder_stand.emplace_back("Pz");
+    // taskOrder_stand.emplace_back("HandTrackJoints");
+    // taskOrder_stand.emplace_back("HeadRP");
 
     kin_tasks_stand.buildPriority(taskOrder_stand);
 }
@@ -118,13 +118,13 @@ void WBC_priority::dataBusRead(const DataBus &robotState) {
     stance_fe_pos_cur_W = robotState.stance_fe_pos_cur_W;
     stance_fe_rot_cur_W = robotState.stance_fe_rot_cur_W;
     stanceDesPos_W = robotState.stanceDesPos_W;
-    hd_l_pos_cur_W = robotState.hd_l_pos_W;
-    hd_r_pos_cur_W = robotState.hd_r_pos_W;
-    hd_l_rot_cur_W = robotState.hd_l_rot_W;
-    hd_r_rot_cur_W = robotState.hd_r_rot_W;
+    // hd_l_pos_cur_W = robotState.hd_l_pos_W;
+    // hd_r_pos_cur_W = robotState.hd_r_pos_W;
+    // hd_l_rot_cur_W = robotState.hd_l_rot_W;
+    // hd_r_rot_cur_W = robotState.hd_r_rot_W;
     fe_l_pos_cur_W = robotState.fe_l_pos_W;
     fe_r_pos_cur_W = robotState.fe_r_pos_W;
-    fe_l_rot_cur_W = robotState.fe_l_rot_W;
+    fe_l_rot_cur_W = robotState.fe_l_rot_W;//left foot rotation matrix in world frame
     fe_r_rot_cur_W = robotState.fe_r_rot_W;
     des_ddq = robotState.des_ddq;
     des_dq = robotState.des_dq;
@@ -132,7 +132,7 @@ void WBC_priority::dataBusRead(const DataBus &robotState) {
     des_q = robotState.des_q;
 
     // state update
-    J_base = robotState.J_base;
+    J_base = robotState.J_base;	//jacobian matrix of the baselink
     dJ_base = robotState.dJ_base;
     base_rot = robotState.base_rot;
     base_pos = robotState.base_pos;
@@ -146,10 +146,10 @@ void WBC_priority::dataBusRead(const DataBus &robotState) {
     dJfe = Eigen::MatrixXd::Zero(12, model_nv);
     dJfe.block(0, 0, 6, model_nv) = robotState.dJ_l;
     dJfe.block(6, 0, 6, model_nv) = robotState.dJ_r;
-    J_hd_l = robotState.J_hd_l;
-    J_hd_r = robotState.J_hd_r;
-    dJ_hd_l = robotState.J_hd_l;
-    dJ_hd_r = robotState.J_hd_r;
+    // J_hd_l = robotState.J_hd_l;
+    // J_hd_r = robotState.J_hd_r;
+    // dJ_hd_l = robotState.J_hd_l;
+    // dJ_hd_r = robotState.J_hd_r;
     Fr_ff = robotState.Fr_ff;
     dyn_M = robotState.dyn_M;
     dyn_M_inv = robotState.dyn_M_inv;
@@ -398,24 +398,20 @@ void WBC_priority::computeDdq(Pin_KinDyn &pinKinDynIn) {
         kin_tasks_walk.taskLib[id].W.diagonal() = Eigen::VectorXd::Ones(model_nv);
 
         id = kin_tasks_walk.getId("RedundantJoints");
-        kin_tasks_walk.taskLib[id].errX = Eigen::VectorXd::Zero(5);
-        kin_tasks_walk.taskLib[id].errX(0) = 0 - q(21);
-        kin_tasks_walk.taskLib[id].errX(1) = 0 - q(22);
-        kin_tasks_walk.taskLib[id].errX(2) = 0 - q(23);
-        kin_tasks_walk.taskLib[id].errX(3) = 0 - q(24);
-        kin_tasks_walk.taskLib[id].errX(4) = 0 - q(25);
-        kin_tasks_walk.taskLib[id].derrX = Eigen::VectorXd::Zero(5);
-        kin_tasks_walk.taskLib[id].ddxDes = Eigen::VectorXd::Zero(5);
-        kin_tasks_walk.taskLib[id].dxDes = Eigen::VectorXd::Zero(5);
-        kin_tasks_walk.taskLib[id].kp = Eigen::MatrixXd::Identity(5, 5) * 200;
-        kin_tasks_walk.taskLib[id].kd = Eigen::MatrixXd::Identity(5, 5) * 20;
-        kin_tasks_walk.taskLib[id].J = Eigen::MatrixXd::Zero(5, model_nv);
-        kin_tasks_walk.taskLib[id].J(0, 20) = 1;
-        kin_tasks_walk.taskLib[id].J(1, 21) = 1;
-        kin_tasks_walk.taskLib[id].J(2, 22) = 1;
-        kin_tasks_walk.taskLib[id].J(3, 23) = 1;
-        kin_tasks_walk.taskLib[id].J(4, 24) = 1;
-        kin_tasks_walk.taskLib[id].dJ = Eigen::MatrixXd::Zero(5, model_nv);
+        kin_tasks_walk.taskLib[id].errX = Eigen::VectorXd::Zero(1);
+        kin_tasks_walk.taskLib[id].errX(0) = 0 - q(7);
+        kin_tasks_walk.taskLib[id].derrX = Eigen::VectorXd::Zero(1);
+        kin_tasks_walk.taskLib[id].ddxDes = Eigen::VectorXd::Zero(1);
+        kin_tasks_walk.taskLib[id].dxDes = Eigen::VectorXd::Zero(1);
+        kin_tasks_walk.taskLib[id].kp = Eigen::MatrixXd::Identity(1, 1) * 200;
+        kin_tasks_walk.taskLib[id].kd = Eigen::MatrixXd::Identity(1, 1) * 20;
+        kin_tasks_walk.taskLib[id].J = Eigen::MatrixXd::Zero(1, model_nv);
+        kin_tasks_walk.taskLib[id].J(0, 6) = 1;
+        // kin_tasks_walk.taskLib[id].J(1, 21) = 1;
+        // kin_tasks_walk.taskLib[id].J(2, 22) = 1;
+        // kin_tasks_walk.taskLib[id].J(3, 23) = 1;
+        // kin_tasks_walk.taskLib[id].J(4, 24) = 1;
+        kin_tasks_walk.taskLib[id].dJ = Eigen::MatrixXd::Zero(1, model_nv);
         kin_tasks_walk.taskLib[id].W.diagonal() = Eigen::VectorXd::Ones(model_nv);
 
         id = kin_tasks_walk.getId("Roll_Pitch_Yaw_Pz");
@@ -487,82 +483,41 @@ void WBC_priority::computeDdq(Pin_KinDyn &pinKinDynIn) {
         kin_tasks_walk.taskLib[id].kp.block<1, 1>(2, 2) = kin_tasks_walk.taskLib[id].kp.block<1, 1>(2, 2) * 0.1;
         kin_tasks_walk.taskLib[id].kd = Eigen::MatrixXd::Identity(6, 6) * 20;
         kin_tasks_walk.taskLib[id].J = Jsw;
-        kin_tasks_walk.taskLib[id].J.block(0,22,6,3).setZero(); // exculde waist joints
+        kin_tasks_walk.taskLib[id].J.block(0,6,6,1).setZero(); // exculde waist joints
         kin_tasks_walk.taskLib[id].dJ = dJsw;
-        kin_tasks_walk.taskLib[id].dJ.block(0,22,6,3).setZero(); // exculde waist joints
+        kin_tasks_walk.taskLib[id].dJ.block(0,6,6,1).setZero(); // exculde waist joints
         kin_tasks_walk.taskLib[id].W.diagonal() = Eigen::VectorXd::Ones(model_nv);
 
-        // task 6: hand track
-        // define swing arm motion
-//    hd_l_pos_L_des<<-0.02, 0.32, -0.159;
-//    hd_r_pos_L_des<<-0.02, -0.32, -0.159;
-//    hd_l_eul_L_des<<-1.7581, 0.2129, 2.9581;
-//    hd_r_eul_L_des<<1.7581, 0.21291, -2.9581;
+        // Eigen::Vector3d hd_l_eul_L_des = {-1.7581, 0.2129, 2.9581};
+        // Eigen::Vector3d hd_r_eul_L_des = {1.7581, 0.2129, -2.9581};
+        // Eigen::Matrix3d hd_l_rot_des = eul2Rot(hd_l_eul_L_des(0), hd_l_eul_L_des(1), hd_l_eul_L_des(2));
+        // Eigen::Matrix3d hd_r_rot_des = eul2Rot(hd_r_eul_L_des(0), hd_r_eul_L_des(1), hd_r_eul_L_des(2));
 
-        Eigen::Vector3d hd_l_eul_L_des = {-1.253, 0.122, -1.732};
-        Eigen::Vector3d hd_r_eul_L_des = {1.253, 0.122, 1.732};
-        Eigen::Matrix3d hd_l_rot_des = eul2Rot(hd_l_eul_L_des(0), hd_l_eul_L_des(1), hd_l_eul_L_des(2));
-        Eigen::Matrix3d hd_r_rot_des = eul2Rot(hd_r_eul_L_des(0), hd_r_eul_L_des(1), hd_r_eul_L_des(2));
+        // Eigen::Vector3d base2shoulder_l_pos_L_des = {0.0040, 0.1616, 0.3922};
+        // Eigen::Vector3d shoulder2hand_l_pos_L_des = {-0.0240, 0.1584, -0.5512};
+        // Eigen::Vector3d base2shoulder_r_pos_L_des = {0.0040, -0.1616, 0.3922};
+        // Eigen::Vector3d shoulder2hand_r_pos_L_des = {-0.0240, -0.1584, -0.5512};
+        // double l_hip_pitch = q(28) - qIniDes(28);
+        // double r_hip_pitch = q(34) - qIniDes(34);
+        // double k = 0.8;
+        // hd_l_rot_des = eul2Rot(0, -k * r_hip_pitch, 0) * hd_l_rot_des;
+        // hd_r_rot_des = eul2Rot(0, -k * l_hip_pitch, 0) * hd_r_rot_des;
 
-        Eigen::Vector3d base2shoulder_l_pos_L_des = {0.0040, 0.1616, 0.3922};
-        Eigen::Vector3d shoulder2hand_l_pos_L_des = {-0.0240, 0.1584, -0.5512};
-        Eigen::Vector3d base2shoulder_r_pos_L_des = {0.0040, -0.1616, 0.3922};
-        Eigen::Vector3d shoulder2hand_r_pos_L_des = {-0.0240, -0.1584, -0.5512};
-        double l_hip_pitch = q(28) - qIniDes(28);
-        double r_hip_pitch = q(34) - qIniDes(34);
-        double k = 0.8;
-        hd_l_rot_des = eul2Rot(0, -k * r_hip_pitch, 0) * hd_l_rot_des;
-        hd_r_rot_des = eul2Rot(0, -k * l_hip_pitch, 0) * hd_r_rot_des;
+        // Eigen::Vector3d hd_l_pos_W_des =
+        //         eul2Rot(0, -k * r_hip_pitch, 0) * shoulder2hand_l_pos_L_des + base2shoulder_l_pos_L_des + base_pos;
+        // Eigen::Vector3d hd_r_pos_W_des =
+        //         eul2Rot(0, -k * l_hip_pitch, 0) * shoulder2hand_r_pos_L_des + base2shoulder_r_pos_L_des + base_pos;
 
-        Eigen::Vector3d hd_l_pos_W_des =
-                eul2Rot(0, -k * r_hip_pitch, 0) * shoulder2hand_l_pos_L_des + base2shoulder_l_pos_L_des + base_pos;
-        Eigen::Vector3d hd_r_pos_W_des =
-                eul2Rot(0, -k * l_hip_pitch, 0) * shoulder2hand_r_pos_L_des + base2shoulder_r_pos_L_des + base_pos;
+        // Eigen::Vector3d hd_l_pos_L_des =
+        //         eul2Rot(0, -k * r_hip_pitch, 0) * shoulder2hand_l_pos_L_des + base2shoulder_l_pos_L_des;
+        // Eigen::Vector3d hd_r_pos_L_des =
+        //         eul2Rot(0, -k * l_hip_pitch, 0) * shoulder2hand_r_pos_L_des + base2shoulder_r_pos_L_des;
 
-        Eigen::Vector3d hd_l_pos_L_des =
-                eul2Rot(0, -k * r_hip_pitch, 0) * shoulder2hand_l_pos_L_des + base2shoulder_l_pos_L_des;
-        Eigen::Vector3d hd_r_pos_L_des =
-                eul2Rot(0, -k * l_hip_pitch, 0) * shoulder2hand_r_pos_L_des + base2shoulder_r_pos_L_des;
-
-        Eigen::Matrix3d hd_l_rot_W_des = hd_l_rot_des;
-        Eigen::Matrix3d hd_r_rot_W_des = hd_r_rot_des;
-
-        id = kin_tasks_walk.getId("HandTrack");
-        kin_tasks_walk.taskLib[id].errX = Eigen::VectorXd::Zero(12);
-        kin_tasks_walk.taskLib[id].errX.block<3, 1>(0, 0) = hd_l_pos_W_des - hd_l_pos_cur_W;
-        kin_tasks_walk.taskLib[id].errX.block<3, 1>(3, 0) = diffRot(hd_l_rot_cur_W, hd_l_rot_W_des);
-        kin_tasks_walk.taskLib[id].errX.block<3, 1>(6, 0) = hd_r_pos_W_des - hd_r_pos_cur_W;
-        kin_tasks_walk.taskLib[id].errX.block<3, 1>(9, 0) = diffRot(hd_r_rot_cur_W, hd_r_rot_W_des);
-        kin_tasks_walk.taskLib[id].derrX = Eigen::VectorXd::Zero(12);
-        kin_tasks_walk.taskLib[id].ddxDes = Eigen::VectorXd::Zero(12);
-        kin_tasks_walk.taskLib[id].dxDes = Eigen::VectorXd::Zero(12);
-        kin_tasks_walk.taskLib[id].kp = Eigen::MatrixXd::Identity(12, 12) * 2000;
-        kin_tasks_walk.taskLib[id].kd = Eigen::MatrixXd::Identity(12, 12) * 20;
-        kin_tasks_walk.taskLib[id].J = Eigen::MatrixXd::Zero(12, model_nv);
-        kin_tasks_walk.taskLib[id].J.block(0, 0, 6, model_nv) = J_hd_l;
-        kin_tasks_walk.taskLib[id].J.block(6, 0, 6, model_nv) = J_hd_r;
-        kin_tasks_walk.taskLib[id].dJ = Eigen::MatrixXd::Zero(12, model_nv);
-        kin_tasks_walk.taskLib[id].dJ.block(0, 0, 6, model_nv) = dJ_hd_l;
-        kin_tasks_walk.taskLib[id].dJ.block(6, 0, 6, model_nv) = dJ_hd_r;
-        kin_tasks_walk.taskLib[id].W.diagonal() = Eigen::VectorXd::Ones(model_nv);
-
-        auto resLeg=pinKinDynIn.computeInK_Hand(hd_l_rot_des,hd_l_pos_L_des,hd_r_rot_des,hd_r_pos_L_des);
-
-        id = kin_tasks_walk.getId("HandTrackJoints");
-        kin_tasks_walk.taskLib[id].errX = Eigen::VectorXd::Zero(14);
-        kin_tasks_walk.taskLib[id].errX=resLeg.jointPosRes.block<14,1>(0,0)-q.block<14,1>(7,0);
-        kin_tasks_walk.taskLib[id].derrX = Eigen::VectorXd::Zero(14);
-        kin_tasks_walk.taskLib[id].ddxDes = Eigen::VectorXd::Zero(14);
-        kin_tasks_walk.taskLib[id].dxDes = Eigen::VectorXd::Zero(14);
-        kin_tasks_walk.taskLib[id].kp = Eigen::MatrixXd::Identity(14, 14) * 2000; //100
-        kin_tasks_walk.taskLib[id].kd = Eigen::MatrixXd::Identity(14, 14) * 100;
-        kin_tasks_walk.taskLib[id].J = Eigen::MatrixXd::Zero(14,model_nv);
-        kin_tasks_walk.taskLib[id].J.block(0,6,14,14)=Eigen::MatrixXd::Identity(14,14);
-        kin_tasks_walk.taskLib[id].dJ = Eigen::MatrixXd::Zero(14,model_nv);
-        kin_tasks_walk.taskLib[id].W.diagonal() = Eigen::VectorXd::Ones(model_nv);
+        // Eigen::Matrix3d hd_l_rot_W_des = hd_l_rot_des;
+        // Eigen::Matrix3d hd_r_rot_W_des = hd_r_rot_des;
     }
 
-    /// -------- stand -------------
+/// -------- stand -------------
     {
 //        int id = kin_tasks_stand.getId("static_Contact");
 //        kin_tasks_stand.taskLib[id].errX = Eigen::VectorXd::Zero(12);
@@ -588,9 +543,9 @@ void WBC_priority::computeDdq(Pin_KinDyn &pinKinDynIn) {
         taskCtMap(0,0)=0;taskCtMap(1,1)=1;taskCtMap(2,2)=1;
         taskCtMap=fe_l_rot_cur_W*taskCtMap*fe_l_rot_cur_W.transpose(); // disable ankle roll joint
         kin_tasks_stand.taskLib[id].J=Jfe;
-        kin_tasks_stand.taskLib[id].J.block(3,0,3,model_nv)=taskCtMap*kin_tasks_stand.taskLib[id].J.block(3,0,3,model_nv);
-        kin_tasks_stand.taskLib[id].J.block(9,0,3,model_nv)=taskCtMap*kin_tasks_stand.taskLib[id].J.block(9,0,3,model_nv);
-        kin_tasks_stand.taskLib[id].J.block(0,22,12,3).setZero(); // exculde waist joints
+        // kin_tasks_stand.taskLib[id].J.block(3,0,3,model_nv)=taskCtMap*kin_tasks_stand.taskLib[id].J.block(3,0,3,model_nv);
+        // kin_tasks_stand.taskLib[id].J.block(9,0,3,model_nv)=taskCtMap*kin_tasks_stand.taskLib[id].J.block(9,0,3,model_nv);
+        // kin_tasks_stand.taskLib[id].J.block(0,6,12,1).setZero(); // exculde waist joints
         kin_tasks_stand.taskLib[id].dJ = Eigen::MatrixXd::Zero(12,model_nv);
         kin_tasks_stand.taskLib[id].W.diagonal() = Eigen::VectorXd::Ones(model_nv);
 
@@ -608,8 +563,8 @@ void WBC_priority::computeDdq(Pin_KinDyn &pinKinDynIn) {
         taskMapRPY(1, 4) = 1;
         taskMapRPY(2, 5) = 1;
         kin_tasks_stand.taskLib[id].J = taskMapRPY * J_hip_link;
-        kin_tasks_stand.taskLib[id].J.block(0,22,3,3).setZero();
-        kin_tasks_stand.taskLib[id].J.block(0,6,3,14).setZero();
+        kin_tasks_stand.taskLib[id].J.block(0,6,3,1).setZero();//exculde waist joints
+        // kin_tasks_stand.taskLib[id].J.block(0,6,3,14).setZero();//exculde arm joints
         kin_tasks_stand.taskLib[id].dJ = Eigen::MatrixXd::Zero(3,model_nv);
         kin_tasks_stand.taskLib[id].W.diagonal() = Eigen::VectorXd::Ones(model_nv);
 
@@ -624,9 +579,9 @@ void WBC_priority::computeDdq(Pin_KinDyn &pinKinDynIn) {
         Eigen::MatrixXd taskMap = Eigen::MatrixXd::Zero(1, 6);
         taskMap(0, 2) = 1;
         kin_tasks_stand.taskLib[id].J = taskMap * J_base;
-        kin_tasks_stand.taskLib[id].J.block(0,22,1,3).setZero();
+        kin_tasks_stand.taskLib[id].J.block(0,6,1,1).setZero();//exculde waist joints
         kin_tasks_stand.taskLib[id].dJ = taskMap * dJ_base;
-        kin_tasks_stand.taskLib[id].dJ.block(0,22,1,3).setZero();
+        kin_tasks_stand.taskLib[id].dJ.block(0,6,1,1).setZero();//exculde waist joints
         kin_tasks_stand.taskLib[id].W.diagonal() = Eigen::VectorXd::Ones(model_nv);
 
         id = kin_tasks_stand.getId("CoMTrack");
@@ -638,7 +593,7 @@ void WBC_priority::computeDdq(Pin_KinDyn &pinKinDynIn) {
         kin_tasks_stand.taskLib[id].kp = Eigen::MatrixXd::Identity(2, 2) * 2000; //100
         kin_tasks_stand.taskLib[id].kd = Eigen::MatrixXd::Identity(2, 2) * 100;
         kin_tasks_stand.taskLib[id].J = Jcom.block(0,0,2,model_nv);
-        kin_tasks_stand.taskLib[id].J.block(0,6,2,14).setZero();
+        // kin_tasks_stand.taskLib[id].J.block(0,6,2,14).setZero();//exculde arm joints
         kin_tasks_stand.taskLib[id].dJ = Eigen::MatrixXd::Zero(2,model_nv);
         kin_tasks_stand.taskLib[id].W.diagonal() = Eigen::VectorXd::Ones(model_nv);
 //        std::cout<<"pCoMCur"<<std::endl<<pCoMCur.transpose()<<std::endl;
@@ -664,68 +619,15 @@ void WBC_priority::computeDdq(Pin_KinDyn &pinKinDynIn) {
         kin_tasks_stand.taskLib[id].kp.block(2,2,3,3) = Eigen::MatrixXd::Identity(3, 3) * 1000; //100 // for hip rpy
         kin_tasks_stand.taskLib[id].kd.block(2,2,3,3) = Eigen::MatrixXd::Identity(3, 3) * 10; //100  // for hip rpy
         kin_tasks_stand.taskLib[id].J = Eigen::MatrixXd::Zero(5,model_nv);
-        kin_tasks_stand.taskLib[id].J.block(0,0,2,model_nv) = Jcom.block(0,0,2,model_nv);
-        kin_tasks_stand.taskLib[id].J.block(2,0,3,model_nv) = taskMapRPY * J_hip_link;
-        kin_tasks_stand.taskLib[id].J.block(2,22,3,3).setZero(); // exculde waist joints
-        kin_tasks_stand.taskLib[id].J.block(2,6,3,14).setZero(); // exculde arm joints
-        //kin_tasks_stand.taskLib[id].J.block(0,6,2,14).setZero();
+        // kin_tasks_stand.taskLib[id].J.block(0,0,2,model_nv) = Jcom.block(0,0,2,model_nv);
+        // kin_tasks_stand.taskLib[id].J.block(2,0,3,model_nv) = taskMapRPY * J_hip_link;
+        // kin_tasks_stand.taskLib[id].J.block(2,6,3,1).setZero(); // exculde waist joints
+
         kin_tasks_stand.taskLib[id].dJ = Eigen::MatrixXd::Zero(5,model_nv);
         kin_tasks_stand.taskLib[id].W.diagonal() = Eigen::VectorXd::Ones(model_nv);
-        kin_tasks_stand.taskLib[id].W.diagonal()(22)=200;
-        kin_tasks_stand.taskLib[id].W.diagonal()(23)=200;
+        // kin_tasks_stand.taskLib[id].W.diagonal()(22)=200;//22: waist pitch
+        // kin_tasks_stand.taskLib[id].W.diagonal()(23)=200;//23: waist roll
 
-        // define swing arm motion
-        Eigen::Vector3d hd_l_eul_L_des = {-1.253, 0.122, -1.732};
-        Eigen::Vector3d hd_r_eul_L_des = {1.253, 0.122, 1.732};
-        Eigen::Matrix3d hd_l_rot_des = eul2Rot(hd_l_eul_L_des(0), hd_l_eul_L_des(1), hd_l_eul_L_des(2));
-        Eigen::Matrix3d hd_r_rot_des = eul2Rot(hd_r_eul_L_des(0), hd_r_eul_L_des(1), hd_r_eul_L_des(2));
-
-        Eigen::Vector3d base2shoulder_l_pos_L_des = {0.0040, 0.1616, 0.3922};
-        Eigen::Vector3d shoulder2hand_l_pos_L_des = {-0.0240, 0.1584, -0.5512};
-        Eigen::Vector3d base2shoulder_r_pos_L_des = {0.0040, -0.1616, 0.3922};
-        Eigen::Vector3d shoulder2hand_r_pos_L_des = {-0.0240, -0.1584, -0.5512};
-        double k = 1;
-        hd_l_rot_des =
-                eul2Rot(0, -k * r_shoulder_pitch, 0) * eul2Rot(hd_l_eul_L_des(0), hd_l_eul_L_des(1), hd_l_eul_L_des(2));
-        hd_r_rot_des =
-                eul2Rot(0, -k * l_shoulder_pitch, 0) * eul2Rot(hd_r_eul_L_des(0), hd_r_eul_L_des(1), hd_r_eul_L_des(2));
-        Eigen::Vector3d hd_l_pos_L_des =
-                eul2Rot(0, -k * r_shoulder_pitch, 0) * shoulder2hand_l_pos_L_des + base2shoulder_l_pos_L_des;//base_pos;
-        Eigen::Vector3d hd_r_pos_L_des =
-                eul2Rot(0, -k * l_shoulder_pitch, 0) * shoulder2hand_r_pos_L_des + base2shoulder_r_pos_L_des; //+ base_pos;
-
-        auto resLeg=pinKinDynIn.computeInK_Hand(hd_l_rot_des,hd_l_pos_L_des,hd_r_rot_des,hd_r_pos_L_des);
-
-        id = kin_tasks_stand.getId("HandTrackJoints");
-        kin_tasks_stand.taskLib[id].errX = Eigen::VectorXd::Zero(14);
-        kin_tasks_stand.taskLib[id].errX=resLeg.jointPosRes.block<14,1>(0,0)-q.block<14,1>(7,0);
-        kin_tasks_stand.taskLib[id].derrX = Eigen::VectorXd::Zero(14);
-        kin_tasks_stand.taskLib[id].ddxDes = Eigen::VectorXd::Zero(14);
-        kin_tasks_stand.taskLib[id].dxDes = Eigen::VectorXd::Zero(14);
-        kin_tasks_stand.taskLib[id].kp = Eigen::MatrixXd::Identity(14, 14) * 2000; //100
-        kin_tasks_stand.taskLib[id].kd = Eigen::MatrixXd::Identity(14, 14) * 100;
-        kin_tasks_stand.taskLib[id].J = Eigen::MatrixXd::Zero(14,model_nv);
-        kin_tasks_stand.taskLib[id].J.block(0,6,14,14)=Eigen::MatrixXd::Identity(14,14);
-        kin_tasks_stand.taskLib[id].dJ = Eigen::MatrixXd::Zero(14,model_nv);
-        kin_tasks_stand.taskLib[id].W.diagonal() = Eigen::VectorXd::Ones(model_nv);
-
-        // Enter here functions to send actuator commands, like:
-        // arm-l: 0-6, arm-r: 7-13, head: 14,15, waist: 16-18, leg-l: 19-24, leg-r: 25-30
-
-        id = kin_tasks_stand.getId("HeadRP");
-        kin_tasks_stand.taskLib[id].errX = Eigen::VectorXd::Zero(2);
-        kin_tasks_stand.taskLib[id].errX(0)=0-q(21);
-        kin_tasks_stand.taskLib[id].errX(1)=base_rpy_cur(1)-q(22);
-        kin_tasks_stand.taskLib[id].derrX = Eigen::VectorXd::Zero(2);
-        kin_tasks_stand.taskLib[id].ddxDes = Eigen::VectorXd::Zero(2);
-        kin_tasks_stand.taskLib[id].dxDes = Eigen::VectorXd::Zero(2);
-        kin_tasks_stand.taskLib[id].kp = Eigen::MatrixXd::Identity(2, 2) * 100; //100
-        kin_tasks_stand.taskLib[id].kd = Eigen::MatrixXd::Identity(2, 2) * 10;
-        kin_tasks_stand.taskLib[id].J = Eigen::MatrixXd::Zero(2,model_nv);
-        kin_tasks_stand.taskLib[id].J(0,20)=1;
-        kin_tasks_stand.taskLib[id].J(1,21)=1;
-        kin_tasks_stand.taskLib[id].dJ = Eigen::MatrixXd::Zero(2,model_nv);
-        kin_tasks_stand.taskLib[id].W.diagonal() = Eigen::VectorXd::Ones(model_nv);
 
         id = kin_tasks_stand.getId("Roll_Pitch_Yaw");
         kin_tasks_stand.taskLib[id].errX = Eigen::VectorXd::Zero(3);
@@ -747,18 +649,18 @@ void WBC_priority::computeDdq(Pin_KinDyn &pinKinDynIn) {
 
         id = kin_tasks_stand.getId("fixedWaist");
         kin_tasks_stand.taskLib[id].errX = Eigen::VectorXd::Zero(3);
-        kin_tasks_stand.taskLib[id].errX(0) = 0 - q(23);
-        kin_tasks_stand.taskLib[id].errX(1) = 0 - q(24);
-        kin_tasks_stand.taskLib[id].errX(2) = 0 - q(25);
+        // kin_tasks_stand.taskLib[id].errX(0) = 0 - q(23);//23: waist pitch
+        // kin_tasks_stand.taskLib[id].errX(1) = 0 - q(24);//24: waist roll
+        kin_tasks_stand.taskLib[id].errX(2) = 0 - q(6);//waist yaw
         kin_tasks_stand.taskLib[id].derrX = Eigen::VectorXd::Zero(3);
         kin_tasks_stand.taskLib[id].ddxDes = Eigen::VectorXd::Zero(3);
         kin_tasks_stand.taskLib[id].dxDes = Eigen::VectorXd::Zero(3);
         kin_tasks_stand.taskLib[id].kp = Eigen::MatrixXd::Identity(3, 3) * 200;
         kin_tasks_stand.taskLib[id].kd = Eigen::MatrixXd::Identity(3, 3) * 20;
         kin_tasks_stand.taskLib[id].J = Eigen::MatrixXd::Zero(3, model_nv);
-        kin_tasks_stand.taskLib[id].J(0, 22) = 1;
-        kin_tasks_stand.taskLib[id].J(1, 23) = 1;
-        kin_tasks_stand.taskLib[id].J(2, 24) = 1;
+        // kin_tasks_stand.taskLib[id].J(0, 22) = 1;//23: waist pitch
+        // kin_tasks_stand.taskLib[id].J(1, 23) = 1;//24: waist roll
+        kin_tasks_stand.taskLib[id].J(2, 6) = 1;//waist yaw
         kin_tasks_stand.taskLib[id].dJ = Eigen::MatrixXd::Zero(3, model_nv);
         kin_tasks_stand.taskLib[id].W.diagonal() = Eigen::VectorXd::Ones(model_nv);
     }

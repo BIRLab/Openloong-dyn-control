@@ -25,13 +25,8 @@ Feel free to use in any purpose, and cite OpenLoong-Dynamics-Control in any styl
 class Pin_KinDyn {
 public:
     std::vector<bool> motorReachLimit;
-    const std::vector<std::string> motorName={"J_arm_l_01","J_arm_l_02","J_arm_l_03", "J_arm_l_04", "J_arm_l_05",
-                                              "J_arm_l_06","J_arm_l_07","J_arm_r_01", "J_arm_r_02", "J_arm_r_03",
-                                              "J_arm_r_04","J_arm_r_05","J_arm_r_06", "J_arm_r_07",
-                                              "J_head_yaw","J_head_pitch","J_waist_pitch","J_waist_roll", "J_waist_yaw",
-                                              "J_hip_l_roll", "J_hip_l_yaw", "J_hip_l_pitch", "J_knee_l_pitch",
-                                              "J_ankle_l_pitch", "J_ankle_l_roll", "J_hip_r_roll", "J_hip_r_yaw",
-                                              "J_hip_r_pitch", "J_knee_r_pitch", "J_ankle_r_pitch", "J_ankle_r_roll"}; // joint name in urdf and jason config files
+    const std::vector<std::string> motorName={"M_hip_l_roll", "M_hip_l_yaw", "M_hip_l_pitch", "M_knee_l_pitch","M_ankle_l_pitch",
+                                              "M_hip_r_roll", "M_hip_r_yaw","M_hip_r_pitch", "M_knee_r_pitch", "M_ankle_r_pitch","M_waist_yaw"};// joint name in urdf and jason config files
     Eigen::VectorXd motorMaxTorque;
     Eigen::VectorXd motorMaxPos;
     Eigen::VectorXd motorMinPos;

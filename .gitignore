@@ -182,3 +182,6 @@ install/
 
 record/datalog.log
 record/matlabReadDataScript.txt
+
+.vscode
+.cache

@@ -1,6 +1,6 @@
 find_package(PkgConfig REQUIRED)
 
-pkg_check_modules(LIB_LELY REQUIRED liblely-coapp)
+pkg_check_modules(LIB_LELY liblely-coapp)
 
 add_custom_command(
     OUTPUT "${CMAKE_BINARY_DIR}/config/master.dcf"
