@@ -179,6 +179,7 @@ doc/doxygen/xml/cmake-build-release_2CMakeFiles_2wbc__speed__test_8dir_2link_8tx
 
 build/
 install/
+config/
 
 record/datalog.log
 record/matlabReadDataScript.txt

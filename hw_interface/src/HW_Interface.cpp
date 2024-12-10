@@ -254,7 +254,7 @@ private:
     struct MotorBus {
         MotorBus(MotorManager *m, const MotorDescription &d) : controller(d.bus_name.c_str()),
                                                                channel(m->poll, m->exec),
-                                                               master(m->timer, channel, "config/master.dcf", "") {
+                                                               master(m->timer, channel, "../config/master.dcf", "") {
             channel.open(controller);
         }
 
