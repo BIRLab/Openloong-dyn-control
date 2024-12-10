@@ -16,21 +16,32 @@
 
 using namespace std::chrono_literals;
 
+struct MotorDescription {
+    std::string bus_name;
+    uint8_t node_id;
+    uint8_t global_id;
+    int32_t encoder;
+    int32_t offset;
+    double torque_constant;
+    bool reverse;
+};
+
 class MotorDriver : public lely::canopen::FiberDriver {
 public:
-    explicit MotorDriver(ev_exec_t* exec, lely::canopen::AsyncMaster& master, uint8_t id, int32_t motor_encoder, int32_t motor_offset, bool motor_reverse) : lely::canopen::FiberDriver(exec, master, id), encoder{motor_encoder}, offset{motor_offset}, reverse{motor_reverse ? -1.0 : 1.0} { }
+    explicit MotorDriver(ev_exec_t* exec, lely::canopen::AsyncMaster& master, const MotorDescription& desc) : lely::canopen::FiberDriver(exec, master, desc.node_id), encoder{desc.encoder}, offset{desc.offset}, torque_constant{desc.torque_constant}, reverse{desc.reverse ? -1.0 : 1.0} { }
 
     // constance
     const int32_t encoder;
     const int32_t offset;
+    const double torque_constant;   // Nm / A
     const double reverse;
 
     // motor feedback
     std::mutex feedback_mutex;
-    double position{};        // rad
-    double velocity{};        // rad / s
-    double current{};         // A
-    double torque{};          // Nm
+    double position{};              // rad
+    double velocity{};              // rad / s
+    double current{};               // A
+    double torque{};                // Nm
 
     bool ready{false};
 
@@ -42,23 +53,20 @@ public:
         torque = reverse * (double)torque_raw / 1000.0;
     }
 
-    void readFeedback(double& position_out, double& velocity_out, double& current_out, double& torque_out) {
+    void readFeedback(double& position_out, double& velocity_out, double& torque_out) {
         std::scoped_lock lock(feedback_mutex);
         position_out = position;
         velocity_out = velocity;
-        current_out = current;
         torque_out = torque;
     }
 
-    void sendCommand(double target_current) {
-        tpdo_mapped[0x6071][0] = (int16_t)(reverse * 1000000.0 * target_current / max_current);
+    void sendCommand(double target_torque) {
+        tpdo_mapped[0x6071][0] = (int16_t)(reverse * 1000000.0 * target_torque / (max_current * torque_constant));
         tpdo_mapped[0x6071][0].WriteEvent();
     }
 
 private:
     uint32_t max_current{};
-    uint16_t status{};
-    uint16_t error_code{};
     int32_t position_raw{};
     int32_t velocity_raw{};
     int16_t current_raw{};
@@ -109,14 +117,6 @@ private:
 
     void OnRpdoWrite(uint16_t idx, uint8_t subidx) noexcept override {
         switch (idx) {
-            case 0x6041:
-                // Statusword
-                status = rpdo_mapped[0x6041][0];
-                break;
-            case 0x603F:
-                // Error Code
-                error_code = rpdo_mapped[0x603F][0];
-                break;
             case 0x6064:
                 // Position actual value
                 position_raw = rpdo_mapped[0x6064][0];
@@ -139,15 +139,6 @@ private:
     }
 };
 
-struct MotorDescription {
-    std::string bus_name;
-    uint8_t node_id;
-    uint8_t global_id;
-    int32_t encoder;
-    int32_t offset;
-    bool reverse;
-};
-
 class MotorManager {
 public:
     explicit MotorManager(const std::vector<MotorDescription>& desc) : io_guard(), ctx(), poll(ctx), loop(poll.get_poll()), exec(loop.get_executor()), timer(poll, exec, CLOCK_MONOTONIC) {
@@ -155,13 +146,13 @@ public:
             auto it = buses.find(d.bus_name);
             if (it == buses.end()) {
                 try {
-                    auto r = buses.emplace(d.bus_name, std::make_shared<MotorBus>(this, d));
+                    auto r = buses.emplace(d.bus_name, std::make_shared<MotorBus>(this, d.bus_name));
                     it = r.first;
                 } catch (std::system_error const& ex) {
                     throw std::runtime_error(ex.what() + std::string(" - (" + d.bus_name + ")"));
                 }
             }
-            drivers[d.global_id] = std::make_shared<MotorDriver>(exec, it->second->master, d.node_id, d.encoder, d.offset, d.reverse);
+            drivers[d.global_id] = std::make_shared<MotorDriver>(exec, it->second->master, d);
         }
         for (const auto& b : buses) {
             b.second->master.Reset();
@@ -219,8 +210,7 @@ public:
         busIn.motors_tor_cur.resize(max_motor_id);
 
         for (const auto& m : drivers) {
-            double torque_sensor;
-            m.second->readFeedback(busIn.motors_pos_cur[m.first], busIn.motors_vel_cur[m.first], busIn.motors_tor_cur[m.first], torque_sensor);
+            m.second->readFeedback(busIn.motors_pos_cur[m.first], busIn.motors_vel_cur[m.first], busIn.motors_tor_cur[m.first]);
         }
 
         busIn.rpy[0] = 0;
@@ -252,9 +242,9 @@ private:
     std::thread loop_thread;
 
     struct MotorBus {
-        MotorBus(MotorManager *m, const MotorDescription &d) : controller(d.bus_name.c_str()),
-                                                               channel(m->poll, m->exec),
-                                                               master(m->timer, channel, "../config/master.dcf", "") {
+        MotorBus(MotorManager *m, const std::string& bus_name) : controller(bus_name.c_str()),
+                                                                 channel(m->poll, m->exec),
+                                                                 master(m->timer, channel, "../config/master.dcf", "") {
             channel.open(controller);
         }
 
