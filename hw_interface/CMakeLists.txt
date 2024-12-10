@@ -4,7 +4,7 @@ pkg_check_modules(LIB_LELY liblely-coapp)
 
 add_custom_command(
     OUTPUT "${CMAKE_BINARY_DIR}/config/master.dcf"
-    DEPENDS "${CMAKE_CURRENT_LIST_DIR}/config/config.yml" "${CMAKE_CURRENT_LIST_DIR}/config/zeroerr.eds"
+    DEPENDS "${CMAKE_CURRENT_LIST_DIR}/config/config.yml" "${CMAKE_CURRENT_LIST_DIR}/config/zeroerr.eds" "${CMAKE_CURRENT_LIST_DIR}/scripts/generate_config.py"
     WORKING_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/config"
     COMMAND mkdir -p "${CMAKE_BINARY_DIR}/config"
     COMMAND python3 "${CMAKE_CURRENT_LIST_DIR}/scripts/generate_config.py" "${CMAKE_CURRENT_LIST_DIR}/config/config.yml" "${CMAKE_BINARY_DIR}/config"
@@ -24,7 +24,7 @@ target_compile_definitions(hw_interface PRIVATE ${LIB_LELY_CFLAGS_OTHER})
 target_link_libraries(hw_interface PRIVATE ${LIB_LELY_LIBRARIES})
 
 install(
-    FILES "${CMAKE_BINARY_DIR}/config/master.dcf" "${CMAKE_BINARY_DIR}/config/99-candlelight.rules"
+    FILES "${CMAKE_BINARY_DIR}/config/master.dcf"
     DESTINATION config
 )
 
@@ -32,9 +32,4 @@ install(
     DIRECTORY "${CMAKE_BINARY_DIR}/config"
     DESTINATION "."
     FILES_MATCHING PATTERN "*.bin"
-)
-
-install(
-    PROGRAMS "${CMAKE_CURRENT_LIST_DIR}/scripts/setup_can.sh"
-    DESTINATION scripts
 )
