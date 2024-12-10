@@ -1,5 +1,5 @@
 options:
-  dcf_path: "config"
+  dcf_path: "../config"
 
 master:
   node_id: 50

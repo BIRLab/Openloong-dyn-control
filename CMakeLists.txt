@@ -98,4 +98,4 @@ target_include_directories(main PRIVATE robot)
 target_link_libraries(main PRIVATE core hw_interface)
 
 # 最终输出
-install(TARGETS main RUNTIME DESTINATION .)
+install(TARGETS main)
