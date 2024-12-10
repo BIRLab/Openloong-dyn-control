@@ -11,7 +11,7 @@
 #include <chrono>
 
 using namespace std::chrono_literals;
-const double timestep = 1e-3;
+const double timestep = 5e-3;
 
 int main(int argc, const char** argv)
 {
@@ -77,7 +77,7 @@ int main(int argc, const char** argv)
     double startSteppingTime = 60;
     double startWalkingTime = 120;
     auto startTime = std::chrono::steady_clock::now();
-    auto wakeUpTime = startTime + 1ms;
+    auto wakeUpTime = startTime + std::chrono::duration_cast<std::chrono::steady_clock::duration>(std::chrono::duration<double>(timestep));
 
     while (true)
     {
@@ -166,7 +166,7 @@ int main(int argc, const char** argv)
 
         // ------------- pvt ------------
         pvtCtr.dataBusRead(RobotState);
-        if (currentTime <= 3)
+        if (currentTime <= startSteppingTime)
         {
           pvtCtr.calMotorsPVT(100.0 / 1000.0 / 180.0 * 3.1415);
         } else {
@@ -194,7 +194,7 @@ int main(int argc, const char** argv)
         logger.finishLine();
 
         std::this_thread::sleep_until(wakeUpTime);
-        wakeUpTime += 1ms;
+        wakeUpTime += std::chrono::duration_cast<std::chrono::steady_clock::duration>(std::chrono::duration<double>(timestep));
     }
     return 0;
 }
