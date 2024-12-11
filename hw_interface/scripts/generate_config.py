@@ -24,7 +24,7 @@ with open(os.path.join(out_dir, 'bus.yml'), 'w') as f:
 motor_descriptions = []
 
 for bus_name, bus_config in bus_yaml['buses'].items():
-    for node in bus_config['nodes']:
+    for node in bus_config:
         node_id = node['node_id']
         global_id = node['global_id']
         encoder = node['encoder']

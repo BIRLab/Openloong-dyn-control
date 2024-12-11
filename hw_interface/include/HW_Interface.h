@@ -3,8 +3,6 @@
 #include "robot_interface.h"
 #include <memory>
 
-class MotorManager;
-
 class HW_Interface : RobotInterface {
 public:
     HW_Interface();
@@ -14,5 +12,6 @@ public:
     void dataBusWrite(DataBus &busIn) override;
 
 private:
-    std::shared_ptr<MotorManager> m;
+    class Implementation;
+    std::unique_ptr<Implementation> i;
 };
