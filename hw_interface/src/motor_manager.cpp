@@ -203,8 +203,10 @@ void MotorManager::wait_ready_state(bool ready) {
     while (!all_ready) {
         all_ready = true;
         for (const auto& m : drivers) {
-            if (m.second->ready != ready)
+            if (m.second->ready != ready) {
                 all_ready = false;
+                std::this_thread::sleep_for(10ms);
+            }
         }
     }
     std::this_thread::sleep_for(500ms);
