@@ -79,3 +79,8 @@ buses:
     - { node_id: 1, global_id: 5, encoder: 524288, offset: 262143, torque_constant: 9.648,reverse: false }
     - { node_id: 2, global_id: 6, encoder: 524288, offset: 262143, torque_constant: 9.504,reverse: false }
     - { node_id: 11, global_id: 10, encoder: 524288, offset: 262143, torque_constant: 10.08,reverse: false }
+
+transforms:
+  t265_to_base_link:
+    rpy: [0.0, 0.0, 0.0]
+    xyz: [0.0, 0.0, 0.0]

@@ -1,15 +1,17 @@
 #include "HW_Interface.h"
 #include "motor_manager.h"
-#include "ahrs.h"
+#include "t265.h"
 
 class HW_Interface::Implementation {
 public:
     void wait_ready() {
         m.wait_ready();
+        t.wait_ready();
     }
 
     void updateSensorValues() {
         m.updateSensorValues();
+        t.updateSensorValues();
     }
 
     void setMotorsTorque(std::vector<double> &tauIn) {
@@ -18,12 +20,12 @@ public:
 
     void dataBusWrite(DataBus &busIn) {
         m.dataBusWrite(busIn);
-        a.dataBusWrite(busIn);
+        t.dataBusWrite(busIn);
     }
 
 private:
     MotorManager m;
-    AHRS a;
+    T265 t;
 };
 
 HW_Interface::HW_Interface() : i{std::make_unique<Implementation>()} {

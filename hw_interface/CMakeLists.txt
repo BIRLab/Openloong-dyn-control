@@ -1,4 +1,5 @@
 find_package(PkgConfig REQUIRED)
+find_package(realsense2 REQUIRED)
 
 pkg_check_modules(LIB_LELY liblely-coapp)
 
@@ -23,7 +24,7 @@ add_dependencies(hw_interface dcf_file)
 target_include_directories(hw_interface PUBLIC include)
 target_include_directories(hw_interface PRIVATE ${LIB_LELY_INCLUDE_DIRS} "${CONFIG_OUT_DIR}")
 target_compile_definitions(hw_interface PRIVATE ${LIB_LELY_CFLAGS_OTHER})
-target_link_libraries(hw_interface PRIVATE ${LIB_LELY_LIBRARIES})
+target_link_libraries(hw_interface PRIVATE ${LIB_LELY_LIBRARIES} ${realsense2_LIBRARY})
 
 install(
     FILES "${CONFIG_OUT_DIR}/master.dcf"
