@@ -3,7 +3,7 @@ import sys
 import yaml
 import os
 import numpy as np
-from docutils.nodes import definition
+
 
 config_file = sys.argv[1]
 out_dir = sys.argv[2]
