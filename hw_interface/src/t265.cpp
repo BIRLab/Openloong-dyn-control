@@ -1,9 +1,9 @@
 #include "t265.h"
 #include "transforms.h"
-#include <librealsense2/rs.hpp>
 #include <map>
 
 using namespace std::chrono_literals;
+using namespace std::placeholders;
 
 static bool device_with_streams(const std::vector <rs2_stream>& stream_requests, std::string& out_serial)
 {
@@ -47,13 +47,20 @@ static bool device_with_streams(const std::vector <rs2_stream>& stream_requests,
     return false;
 }
 
-T265::T265() : running{true}, ready{false}, camera_to_base_link{Transforms::t265_to_base_link} {
-    loop_thread = std::thread([this] { processData(); });
+T265::T265() : ready{false}, camera_to_base_link{Transforms::t265_to_base_link} {
+    std::string serial;
+    assert(device_with_streams({ RS2_STREAM_POSE}, serial) || !fprintf(stderr, "T265 not found!\n"));
+
+    rs2::config cfg;
+    if (!serial.empty())
+        cfg.enable_device(serial);
+    cfg.enable_stream(RS2_STREAM_POSE, RS2_FORMAT_6DOF);
+
+    pipe.start(cfg, std::bind(&T265::frame_cb, this, _1));
 }
 
 T265::~T265() {
-    running = false;
-    loop_thread.join();
+    pipe.stop();
 }
 
 void T265::wait_ready() const {
@@ -104,24 +111,12 @@ void T265::dataBusWrite(DataBus &busIn) {
     busIn.updateQ();
 }
 
-void T265::processData() {
-    std::string serial;
-    assert(device_with_streams({ RS2_STREAM_POSE}, serial) || !fprintf(stderr, "T265 not found!\n"));
-
-    rs2::pipeline pipe;
-    rs2::config cfg;
-    if (!serial.empty())
-        cfg.enable_device(serial);
-    cfg.enable_stream(RS2_STREAM_POSE, RS2_FORMAT_6DOF);
-    pipe.start(cfg);
-
-    while (running) {
-        auto frames = pipe.wait_for_frames();
-        auto f = frames.first_or_default(RS2_STREAM_POSE);
-        auto pose_data = f.as<rs2::pose_frame>().get_pose_data();
+void T265::frame_cb(const rs2::frame& frame) {
+    if (auto fp = frame.as<rs2::pose_frame>()) {
+        rs2_pose pose_data = fp.get_pose_data();
 
         {
-            std::scoped_lock<std::mutex> lock { data_mutex };
+            std::scoped_lock<std::mutex> lock{data_mutex};
 
             translation[0] = pose_data.translation.x;
             translation[1] = pose_data.translation.y;

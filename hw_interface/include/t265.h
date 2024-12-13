@@ -1,6 +1,7 @@
 #pragma once
 #include "robot_interface.h"
 #include <Eigen/Geometry>
+#include <librealsense2/rs.hpp>
 #include <thread>
 #include <mutex>
 
@@ -13,9 +14,8 @@ public:
     void dataBusWrite(DataBus &busIn);
 
 private:
-    bool running;
     bool ready;
-    std::thread loop_thread;
+    rs2::pipeline pipe;
 
     // transform
     const Eigen::Matrix4f camera_to_base_link;
@@ -38,5 +38,5 @@ private:
     Eigen::Vector3f base_angular_acceleration;
     Eigen::Vector3f base_rpy;
 
-    void processData();
+    void frame_cb(const rs2::frame& frame);
 };
