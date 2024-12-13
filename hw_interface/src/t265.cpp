@@ -1,5 +1,6 @@
 #include "t265.h"
 #include "transforms.h"
+#include "cl_color.h"
 #include <map>
 
 using namespace std::chrono_literals;
@@ -67,6 +68,7 @@ void T265::wait_ready() const {
     while (!ready) {
         std::this_thread::sleep_for(10ms);
     }
+    std::cout << CL_BOLDGREEN << "t265 booted successfully" << CL_RESET << std::endl;
 }
 
 void T265::updateSensorValues() {

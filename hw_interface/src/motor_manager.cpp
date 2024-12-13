@@ -1,4 +1,5 @@
 #include "motor_manager.h"
+#include "cl_color.h"
 
 using namespace std::chrono_literals;
 
@@ -71,11 +72,11 @@ private:
             tpdo_mapped[0x6040][0].WriteEvent();
 
             AsyncWait(500ms).submit(master.get_executor(), [this](){
-                std::cout << "motor " << static_cast<int>(id()) << " booted successfully" << std::endl;
+                std::cout << CL_BOLDGREEN << "motor " << static_cast<int>(id()) << " booted successfully" << CL_RESET << std::endl;
                 ready = true;
             });
         } else {
-            std::cout << "motor " << static_cast<int>(id()) << " failed to boot: " << what << std::endl;
+            std::cerr << "motor " << static_cast<int>(id()) << " failed to boot: " << what << std::endl;
         }
     }
 
