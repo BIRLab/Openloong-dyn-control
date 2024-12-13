@@ -1,7 +1,11 @@
 find_package(PkgConfig REQUIRED)
 find_package(realsense2 REQUIRED)
 
-pkg_check_modules(LIB_LELY liblely-coapp)
+if (realsense2_VERSION VERSION_GREATER "2.53.1")
+    message(FATAL_ERROR "realsense2 version must be less than 2.53.1. Detected version: ${realsense2_VERSION}")
+endif()
+
+pkg_check_modules(LIB_LELY REQUIRED liblely-coapp)
 
 set(CONFIG_OUT_DIR "${CMAKE_BINARY_DIR}/../config")
 
