@@ -56,7 +56,6 @@ void PVT_Ctr::dataBusRead(DataBus &busIn) {
 
 void PVT_Ctr::dataBusWrite(DataBus &busIn) {
     busIn.motors_tor_out=motor_tor_out;
-    busIn.motors_tor_cur=motor_tor_out;
 }
 
 void PVT_Ctr::setJointPD(double kp, double kd, const char *jointName) {
