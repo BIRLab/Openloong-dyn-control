@@ -27,9 +27,8 @@ def generate_motor_descriptions(config_yaml):
             global_id = node['global_id']
             encoder = node['encoder']
             offset = node['offset']
-            torque_constant = node['torque_constant']
             reverse = 'true' if node['reverse'] else 'false'
-            motor_descriptions.append(f'{{"{bus_name}", {node_id}, {global_id}, {encoder}, {offset}, {torque_constant}, {reverse}}},')
+            motor_descriptions.append(f'{{"{bus_name}", {node_id}, {global_id}, {encoder}, {offset}, {reverse}}},')
     with open(os.path.join(out_dir, 'motor_descriptions.h'), 'w') as f:
         f.write('\n'.join(motor_descriptions))
 

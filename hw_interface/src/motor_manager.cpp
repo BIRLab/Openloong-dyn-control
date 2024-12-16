@@ -9,25 +9,22 @@ struct MotorDescription {
     uint8_t global_id;
     int32_t encoder;
     int32_t offset;
-    double torque_constant;
     bool reverse;
 };
 
 class MotorDriver : public lely::canopen::FiberDriver {
 public:
-    explicit MotorDriver(ev_exec_t* exec, lely::canopen::AsyncMaster& master, const MotorDescription& desc) : lely::canopen::FiberDriver(exec, master, desc.node_id), encoder{desc.encoder}, offset{desc.offset}, torque_constant{desc.torque_constant}, reverse{desc.reverse ? -1.0 : 1.0} { }
+    explicit MotorDriver(ev_exec_t* exec, lely::canopen::AsyncMaster& master, const MotorDescription& desc) : lely::canopen::FiberDriver(exec, master, desc.node_id), encoder{desc.encoder}, offset{desc.offset}, reverse{desc.reverse ? -1.0 : 1.0} { }
 
     // constance
     const int32_t encoder;
     const int32_t offset;
-    const double torque_constant;   // Nm / A
     const double reverse;
 
     // motor feedback
     std::mutex feedback_mutex;
     double position{};              // rad
     double velocity{};              // rad / s
-    double current{};               // A
     double torque{};                // Nm
 
     bool ready{false};
@@ -36,8 +33,8 @@ public:
         std::scoped_lock lock(feedback_mutex);
         position = reverse * 2 * M_PI * (position_raw - offset) / encoder;
         velocity = reverse * 2 * M_PI * velocity_raw / encoder;
-        current = reverse * (double)current_raw * (double)max_current / 1000.0;
-        torque = reverse * (double)torque_raw / 1000.0;
+        torque = reverse * (double)torque_raw * (double)rated_torque / 1000000.0;
+        // torque = reverse * (double)torque_sensor_raw / 1000.0;
     }
 
     void readFeedback(double& position_out, double& velocity_out, double& torque_out) {
@@ -48,16 +45,16 @@ public:
     }
 
     void sendCommand(double target_torque) {
-        tpdo_mapped[0x6071][0] = (int16_t)(reverse * 1000000.0 * target_torque / (max_current * torque_constant));
+        tpdo_mapped[0x6071][0] = (int16_t)(reverse * 1000000.0 * target_torque / rated_torque);
         tpdo_mapped[0x6071][0].WriteEvent();
     }
 
 private:
-    uint32_t max_current{};
+    uint32_t rated_torque{};
     int32_t position_raw{};
     int32_t velocity_raw{};
-    int16_t current_raw{};
-    int32_t torque_raw{};
+    int16_t torque_raw{};
+    int32_t torque_sensor_raw{};
 
     void OnBoot(lely::canopen::NmtState st, char es, const std::string& what) noexcept override {
         if (!es || es == 'L') {
@@ -82,8 +79,8 @@ private:
 
     void OnConfig(std::function<void(std::error_code ec)> res) noexcept override {
         try {
-            // read motor rated current
-            max_current = Wait(AsyncRead<uint32_t>(0x6075, 0));
+            // read motor rated torque
+            rated_torque = Wait(AsyncRead<uint32_t>(0x6076, 0));
 
             res({});
         } catch (lely::canopen::SdoError& e) {
@@ -114,11 +111,11 @@ private:
                 break;
             case 0x6077:
                 // Torque actual value
-                current_raw = rpdo_mapped[0x6077][0];
+                torque_raw = rpdo_mapped[0x6077][0];
                 break;
             case 0x3B69:
                 // Torque sensor
-                torque_raw = rpdo_mapped[0x3B69][0];
+                torque_sensor_raw = rpdo_mapped[0x3B69][0];
                 break;
             default:
                 break;
