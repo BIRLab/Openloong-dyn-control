@@ -7,7 +7,6 @@ rm -rf install/*
 
 # build project
 cd build
-cmake ..
 cmake --build . --target main -- -j$(nproc)
 
 # install project
