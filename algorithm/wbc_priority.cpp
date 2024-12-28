@@ -67,13 +67,13 @@ WBC_priority::WBC_priority(int model_nv_In, int QP_nvIn, int QP_ncIn, double miu
     kin_tasks_walk.addTask("PosRot");
 
     std::vector<std::string> taskOrder_walk;//优先级
-    taskOrder_walk.emplace_back("RedundantJoints");
+    taskOrder_walk.emplace_back("RedundantJoints"); 
     taskOrder_walk.emplace_back("static_Contact");
 //    taskOrder_walk.emplace_back("Roll_Pitch_Yaw_Pz");
 //    taskOrder_walk.emplace_back("PxPy");
     taskOrder_walk.emplace_back("PosRot");
     taskOrder_walk.emplace_back("SwingLeg");
-    // taskOrder_walk.emplace_back("HandTrackJoints");
+// taskOrder_walk.emplace_back("HandTrackJoints");
 
 
     kin_tasks_walk.buildPriority(taskOrder_walk);
@@ -92,7 +92,7 @@ WBC_priority::WBC_priority(int model_nv_In, int QP_nvIn, int QP_ncIn, double miu
 
     std::vector<std::string> taskOrder_stand;
 
-//    taskOrder_stand.emplace_back("fixedWaist");
+    taskOrder_stand.emplace_back("fixedWaist");
     taskOrder_stand.emplace_back("static_Contact");
 //    taskOrder_stand.emplace_back("CoMTrack");
 //    taskOrder_stand.emplace_back("HipRPY");
@@ -313,8 +313,8 @@ void WBC_priority::computeTau() {
     eigen_qp_ubA.block<16, 1>(6, 0) = neqRes_upp;
 
     Eigen::MatrixXd eigen_qp_H = Eigen::MatrixXd::Zero(QP_nv, QP_nv);
-    Q2 = Eigen::MatrixXd::Identity(6, 6);
-    Q1 = Eigen::MatrixXd::Identity(12, 12);
+    Q2 = Eigen::MatrixXd::Identity(6, 6);     //关节加速度与期望误差权重
+    Q1 = Eigen::MatrixXd::Identity(12, 12);   //外部接触力与期望误差权重,顺序为fl, tl, fr, tr
     eigen_qp_H.block<6, 6>(0, 0) = Q2 * 2.0 * 1e7;
     eigen_qp_H.block<12, 12>(6, 6) = Q1 * 2.0 * 1e1;
 
@@ -399,14 +399,14 @@ void WBC_priority::computeDdq(Pin_KinDyn &pinKinDynIn) {
 
         id = kin_tasks_walk.getId("RedundantJoints");
         kin_tasks_walk.taskLib[id].errX = Eigen::VectorXd::Zero(1);
-        kin_tasks_walk.taskLib[id].errX(0) = 0 - q(7);
+        kin_tasks_walk.taskLib[id].errX(0) = 0 - q(17);
         kin_tasks_walk.taskLib[id].derrX = Eigen::VectorXd::Zero(1);
         kin_tasks_walk.taskLib[id].ddxDes = Eigen::VectorXd::Zero(1);
         kin_tasks_walk.taskLib[id].dxDes = Eigen::VectorXd::Zero(1);
         kin_tasks_walk.taskLib[id].kp = Eigen::MatrixXd::Identity(1, 1) * 200;
         kin_tasks_walk.taskLib[id].kd = Eigen::MatrixXd::Identity(1, 1) * 20;
         kin_tasks_walk.taskLib[id].J = Eigen::MatrixXd::Zero(1, model_nv);
-        kin_tasks_walk.taskLib[id].J(0, 6) = 1;
+        kin_tasks_walk.taskLib[id].J(0, 16) = 1;
         // kin_tasks_walk.taskLib[id].J(1, 21) = 1;
         // kin_tasks_walk.taskLib[id].J(2, 22) = 1;
         // kin_tasks_walk.taskLib[id].J(3, 23) = 1;
@@ -473,48 +473,25 @@ void WBC_priority::computeDdq(Pin_KinDyn &pinKinDynIn) {
         id = kin_tasks_walk.getId("SwingLeg");
         kin_tasks_walk.taskLib[id].errX = Eigen::VectorXd::Zero(6);
         kin_tasks_walk.taskLib[id].errX.block<3, 1>(0, 0) = swing_fe_pos_des_W - fe_pos_sw_W;
-        desRot = eul2Rot(swing_fe_rpy_des_W(0), swing_fe_rpy_des_W(1), swing_fe_rpy_des_W(2));
-        kin_tasks_walk.taskLib[id].errX.block<3, 1>(3, 0) = diffRot(fe_rot_sw_W, desRot);
+        desRot = eul2Rot(swing_fe_rpy_des_W(0), swing_fe_rpy_des_W(1), swing_fe_rpy_des_W(2));//欧拉角转换旋转矩阵
+        kin_tasks_walk.taskLib[id].errX.block<3, 1>(3, 0) = diffRot(fe_rot_sw_W, desRot);//计算旋转矩阵差
         kin_tasks_walk.taskLib[id].derrX = Eigen::VectorXd::Zero(6);
 //        kin_tasks_walk.taskLib[id].derrX=-Jsw*dq;
         kin_tasks_walk.taskLib[id].ddxDes = Eigen::VectorXd::Zero(6);
         kin_tasks_walk.taskLib[id].dxDes = Eigen::VectorXd::Zero(6);
         kin_tasks_walk.taskLib[id].kp = Eigen::MatrixXd::Identity(6, 6) * 2000;
-        kin_tasks_walk.taskLib[id].kp.block<1, 1>(2, 2) = kin_tasks_walk.taskLib[id].kp.block<1, 1>(2, 2) * 0.1;
+        kin_tasks_walk.taskLib[id].kp.block<1, 1>(2, 2) = kin_tasks_walk.taskLib[id].kp.block<1, 1>(2, 2) * 0.1;//减少法向力控制权重
         kin_tasks_walk.taskLib[id].kd = Eigen::MatrixXd::Identity(6, 6) * 20;
         kin_tasks_walk.taskLib[id].J = Jsw;
-        kin_tasks_walk.taskLib[id].J.block(0,6,6,1).setZero(); // exculde waist joints
+        // kin_tasks_walk.taskLib[id].J.block(0,6,6,1).setZero(); // exculde waist joints
         kin_tasks_walk.taskLib[id].dJ = dJsw;
-        kin_tasks_walk.taskLib[id].dJ.block(0,6,6,1).setZero(); // exculde waist joints
+        // kin_tasks_walk.taskLib[id].dJ.block(0,6,6,1).setZero(); // exculde waist joints
         kin_tasks_walk.taskLib[id].W.diagonal() = Eigen::VectorXd::Ones(model_nv);
 
-        // Eigen::Vector3d hd_l_eul_L_des = {-1.7581, 0.2129, 2.9581};
-        // Eigen::Vector3d hd_r_eul_L_des = {1.7581, 0.2129, -2.9581};
-        // Eigen::Matrix3d hd_l_rot_des = eul2Rot(hd_l_eul_L_des(0), hd_l_eul_L_des(1), hd_l_eul_L_des(2));
-        // Eigen::Matrix3d hd_r_rot_des = eul2Rot(hd_r_eul_L_des(0), hd_r_eul_L_des(1), hd_r_eul_L_des(2));
-
-        // Eigen::Vector3d base2shoulder_l_pos_L_des = {0.0040, 0.1616, 0.3922};
-        // Eigen::Vector3d shoulder2hand_l_pos_L_des = {-0.0240, 0.1584, -0.5512};
-        // Eigen::Vector3d base2shoulder_r_pos_L_des = {0.0040, -0.1616, 0.3922};
-        // Eigen::Vector3d shoulder2hand_r_pos_L_des = {-0.0240, -0.1584, -0.5512};
         // double l_hip_pitch = q(28) - qIniDes(28);
         // double r_hip_pitch = q(34) - qIniDes(34);
         // double k = 0.8;
-        // hd_l_rot_des = eul2Rot(0, -k * r_hip_pitch, 0) * hd_l_rot_des;
-        // hd_r_rot_des = eul2Rot(0, -k * l_hip_pitch, 0) * hd_r_rot_des;
 
-        // Eigen::Vector3d hd_l_pos_W_des =
-        //         eul2Rot(0, -k * r_hip_pitch, 0) * shoulder2hand_l_pos_L_des + base2shoulder_l_pos_L_des + base_pos;
-        // Eigen::Vector3d hd_r_pos_W_des =
-        //         eul2Rot(0, -k * l_hip_pitch, 0) * shoulder2hand_r_pos_L_des + base2shoulder_r_pos_L_des + base_pos;
-
-        // Eigen::Vector3d hd_l_pos_L_des =
-        //         eul2Rot(0, -k * r_hip_pitch, 0) * shoulder2hand_l_pos_L_des + base2shoulder_l_pos_L_des;
-        // Eigen::Vector3d hd_r_pos_L_des =
-        //         eul2Rot(0, -k * l_hip_pitch, 0) * shoulder2hand_r_pos_L_des + base2shoulder_r_pos_L_des;
-
-        // Eigen::Matrix3d hd_l_rot_W_des = hd_l_rot_des;
-        // Eigen::Matrix3d hd_r_rot_W_des = hd_r_rot_des;
     }
 
 /// -------- stand -------------
@@ -648,20 +625,20 @@ void WBC_priority::computeDdq(Pin_KinDyn &pinKinDynIn) {
         kin_tasks_stand.taskLib[id].W.diagonal() = Eigen::VectorXd::Ones(model_nv);
 
         id = kin_tasks_stand.getId("fixedWaist");
-        kin_tasks_stand.taskLib[id].errX = Eigen::VectorXd::Zero(3);
+        kin_tasks_stand.taskLib[id].errX = Eigen::VectorXd::Zero(1);
         // kin_tasks_stand.taskLib[id].errX(0) = 0 - q(23);//23: waist pitch
         // kin_tasks_stand.taskLib[id].errX(1) = 0 - q(24);//24: waist roll
-        kin_tasks_stand.taskLib[id].errX(2) = 0 - q(6);//waist yaw
-        kin_tasks_stand.taskLib[id].derrX = Eigen::VectorXd::Zero(3);
-        kin_tasks_stand.taskLib[id].ddxDes = Eigen::VectorXd::Zero(3);
-        kin_tasks_stand.taskLib[id].dxDes = Eigen::VectorXd::Zero(3);
-        kin_tasks_stand.taskLib[id].kp = Eigen::MatrixXd::Identity(3, 3) * 200;
-        kin_tasks_stand.taskLib[id].kd = Eigen::MatrixXd::Identity(3, 3) * 20;
-        kin_tasks_stand.taskLib[id].J = Eigen::MatrixXd::Zero(3, model_nv);
+        kin_tasks_stand.taskLib[id].errX(0) = 0 - q(17);//waist yaw
+        kin_tasks_stand.taskLib[id].derrX = Eigen::VectorXd::Zero(1);
+        kin_tasks_stand.taskLib[id].ddxDes = Eigen::VectorXd::Zero(1);
+        kin_tasks_stand.taskLib[id].dxDes = Eigen::VectorXd::Zero(1);
+        kin_tasks_stand.taskLib[id].kp = Eigen::MatrixXd::Identity(1, 1) * 200;
+        kin_tasks_stand.taskLib[id].kd = Eigen::MatrixXd::Identity(1, 1) * 20;
+        kin_tasks_stand.taskLib[id].J = Eigen::MatrixXd::Zero(1, model_nv);
         // kin_tasks_stand.taskLib[id].J(0, 22) = 1;//23: waist pitch
         // kin_tasks_stand.taskLib[id].J(1, 23) = 1;//24: waist roll
-        kin_tasks_stand.taskLib[id].J(2, 6) = 1;//waist yaw
-        kin_tasks_stand.taskLib[id].dJ = Eigen::MatrixXd::Zero(3, model_nv);
+        kin_tasks_stand.taskLib[id].J(0, 16) = 1;//waist yaw
+        kin_tasks_stand.taskLib[id].dJ = Eigen::MatrixXd::Zero(1, model_nv);
         kin_tasks_stand.taskLib[id].W.diagonal() = Eigen::VectorXd::Ones(model_nv);
     }
 
