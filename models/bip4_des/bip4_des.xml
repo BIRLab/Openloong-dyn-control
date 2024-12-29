@@ -157,9 +157,11 @@
       <exclude name="ex_l-thigh_l-shank" body1="r_hip_pitch_Link" body2="r_knee_Link" />  
       <exclude name="ex_l-shank_l-foot" body1="r_knee_Link" body2="r_ankle_Link" />           
 
-      <exclude name="ex_baselink_r-hip" body1="base_link" body2="l_hip_yaw_Link" />
-      <exclude name="ex_baselink_l-hip" body1="base_link" body2="r_hip_yaw_Link" />
+      <exclude name="ex_baselink_r-hip" body1="base_link" body2="r_hip_yaw_Link" />
+      <exclude name="ex_baselink_l-hip" body1="base_link" body2="l_hip_yaw_Link" />
 
+      <exclude name="ex_bodylink_r-hip" body1="body_Link" body2="r_hip_yaw_Link" />
+      <exclude name="ex_bodylink_l-hip" body1="body_Link" body2="l_hip_yaw_Link" />
   </contact>
 
   <sensor>

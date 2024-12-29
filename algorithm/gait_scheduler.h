@@ -17,7 +17,7 @@ public:
     double phi{0};
     double tSwing{0.4};
     double dt{0.001};
-    double FzThrehold{100};
+    double FzThrehold{200};
     double Fz_L_m{0}, Fz_R_m{0};
     DataBus::LegState legState, legStateNext;
     DataBus::MotionState motionState;

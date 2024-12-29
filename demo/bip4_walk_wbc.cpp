@@ -46,9 +46,9 @@ int main(int argc, const char** argv)
     double foot_height = 0.07; // distance between the foot ankel joint and the bottom
     double  xv_des = 0.4;  // desired velocity in x direction
 
-    RobotState.width_hips = 0.229;
-    footPlacement.kp_vx = 0.03;
-    footPlacement.kp_vy = 0.035;
+    RobotState.width_hips = 0.2;
+    footPlacement.kp_vx = 0.5;
+    footPlacement.kp_vy = 0.435;
     footPlacement.kp_wz = 0.03;
     footPlacement.stepHeight = 0.25;
     footPlacement.legLength=stand_legLength;
@@ -64,8 +64,8 @@ int main(int argc, const char** argv)
     std::vector<double> motors_tau_cur(model_nv-6,0);
     // Eigen::Vector3d fe_l_pos_L_des={-0.018, 0.113, -stand_legLength};
     // Eigen::Vector3d fe_r_pos_L_des={-0.018, -0.116, -stand_legLength};
-    Eigen::Vector3d fe_l_pos_L_des={-0.05, 0.085, -stand_legLength};
-    Eigen::Vector3d fe_r_pos_L_des={-0.05, -0.085, -stand_legLength};
+    Eigen::Vector3d fe_l_pos_L_des={-0.01, 0.085, -stand_legLength};
+    Eigen::Vector3d fe_r_pos_L_des={-0.01, -0.085, -stand_legLength};
 
     Eigen::Vector3d fe_l_eul_L_des={-0.000, -0.008, -0.000};
     Eigen::Vector3d fe_r_eul_L_des={0.000, -0.008, 0.000};
@@ -80,23 +80,17 @@ int main(int argc, const char** argv)
 
     // register variable name for data logger
     logger.addIterm("simTime", 1);
-    logger.addIterm("motors_pos_cur",model_nv-6);
-    logger.addIterm("motors_vel_cur",model_nv-6);
-    logger.addIterm("rpy",3);
-    logger.addIterm("fL",3);
-    logger.addIterm("fR",3);
+    logger.addIterm("posDes_W",3);
+    logger.addIterm("hipPos_W",3);
     logger.addIterm("basePos",3);
-    logger.addIterm("baseLinVel",3);
-    logger.addIterm("baseAcc",3);
-    logger.addIterm("baseAngVel",3);
     logger.finishItermAdding();
 
     /// ----------------- sim Loop ---------------
     double simEndTime=30;
     mjtNum simstart = mj_data->time;
     double simTime = mj_data->time;
-    double startSteppingTime=3;
-    double startWalkingTime=5;
+    double startSteppingTime=2;
+    double startWalkingTime=4;
 
     // init UI: GLFW
     uiController.iniGLFW();
@@ -202,7 +196,7 @@ int main(int argc, const char** argv)
 
             // ------------- pvt ------------
             pvtCtr.dataBusRead(RobotState);
-            if (simTime<=3)
+            if (simTime <= startSteppingTime)
             {
                 pvtCtr.calMotorsPVT(100.0/1000.0/180.0*3.1415);
             }
@@ -220,15 +214,9 @@ int main(int argc, const char** argv)
 
             logger.startNewLine();
             logger.recItermData("simTime", simTime);
-            logger.recItermData("motors_pos_cur",RobotState.motors_pos_cur);
-            logger.recItermData("motors_vel_cur",RobotState.motors_vel_cur);
-            logger.recItermData("rpy",RobotState.rpy);
-            logger.recItermData("fL",RobotState.fL);
-            logger.recItermData("fR",RobotState.fR);
+            logger.recItermData("posDes_W",footPlacement.posDes_W);
+            logger.recItermData("hipPos_W",footPlacement.hipPos_W);
             logger.recItermData("basePos",RobotState.basePos);
-            logger.recItermData("baseLinVel",RobotState.baseLinVel);
-            logger.recItermData("baseAcc",RobotState.baseAcc);
-            logger.recItermData("baseAngVel",RobotState.baseAngVel);
             logger.finishLine();
 
             // printf("rpyVal=[%.5f, %.5f, %.5f]\n", RobotState.rpy[0], RobotState.rpy[1], RobotState.rpy[2]);
