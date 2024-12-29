@@ -40,12 +40,6 @@ int main(int argc, const char** argv)
     int model_nv = kinDynSolver.model_nv;
 
     // ini position and posture for foot-end and hand
-    std::vector<double> motors_pos_des(model_nv - 6, 0);
-    std::vector<double> motors_pos_cur(model_nv - 6, 0);
-    std::vector<double> motors_vel_des(model_nv - 6, 0);
-    std::vector<double> motors_vel_cur(model_nv - 6, 0);
-    std::vector<double> motors_tau_des(model_nv - 6, 0);
-    std::vector<double> motors_tau_cur(model_nv - 6, 0);
     Eigen::Vector3d fe_l_pos_L_des={-0.05, 0.085, -stand_legLength};
     Eigen::Vector3d fe_r_pos_L_des={-0.05, -0.085, -stand_legLength};
 
@@ -73,11 +67,16 @@ int main(int argc, const char** argv)
     logger.addIterm("baseAngVel", 3);
     logger.finishItermAdding();
 
-    /// stage time
+    // stage time
     double startSteppingTime = 60;
     double startWalkingTime = 120;
     auto startTime = std::chrono::steady_clock::now();
     auto wakeUpTime = startTime + std::chrono::duration_cast<std::chrono::steady_clock::duration>(std::chrono::duration<double>(timestep));
+
+    // reset pvt controller
+    hw_interface.updateSensorValues();
+    hw_interface.dataBusWrite(RobotState);
+    pvtCtr.motor_pos_des_old = RobotState.motors_pos_cur;
 
     while (true)
     {
@@ -149,8 +148,6 @@ int main(int argc, const char** argv)
         // get the final joint command
         if (currentTime <= startSteppingTime) {
             RobotState.motors_pos_des = eigen2std(resLeg.jointPosRes);
-            RobotState.motors_vel_des = motors_vel_des;
-            RobotState.motors_tor_des = motors_tau_des;
         } else {
             // RobotState.wbc_delta_q_final = Eigen::VectorXd::Zero(mj_model->nv);
             Eigen::VectorXd pos_des = kinDynSolver.integrateDIY(
