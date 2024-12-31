@@ -7,11 +7,9 @@
 #include "gait_scheduler.h"
 #include "foot_placement.h"
 #include "joystick_interpreter.h"
-#include <thread>
-#include <chrono>
+#include "scheduler.h"
 
-using namespace std::chrono_literals;
-const double timestep = 5e-3;
+const double timestep = 2e-3;
 
 int main(int argc, const char** argv)
 {
@@ -31,17 +29,17 @@ int main(int argc, const char** argv)
     double foot_height = 0.07;      // distance between the foot ankel joint and the bottom
     double xv_des = 0.4;            // desired velocity in x direction
 
-    RobotState.width_hips = 0.229;
-    footPlacement.kp_vx = 0.03;
-    footPlacement.kp_vy = 0.035;
+    RobotState.width_hips = 0.2;
+    footPlacement.kp_vx = 0.5;
+    footPlacement.kp_vy = 0.435;
     footPlacement.kp_wz = 0.03;
     footPlacement.stepHeight = 0.25;
     footPlacement.legLength = stand_legLength;
     int model_nv = kinDynSolver.model_nv;
 
     // ini position and posture for foot-end and hand
-    Eigen::Vector3d fe_l_pos_L_des={-0.05, 0.085, -stand_legLength};
-    Eigen::Vector3d fe_r_pos_L_des={-0.05, -0.085, -stand_legLength};
+    Eigen::Vector3d fe_l_pos_L_des={-0.01, 0.085, -stand_legLength};
+    Eigen::Vector3d fe_r_pos_L_des={-0.01, -0.085, -stand_legLength};
 
     Eigen::Vector3d fe_l_eul_L_des={-0.000, -0.008, -0.000};
     Eigen::Vector3d fe_r_eul_L_des={0.000, -0.008, 0.000};
@@ -55,36 +53,35 @@ int main(int argc, const char** argv)
     WBC_solv.setQini(qIniDes, RobotState.q);
 
     // register variable name for data logger
-    logger.addIterm("simTime", 1);
+    logger.addIterm("time", 1);
+    logger.addIterm("frequency", 1);
     logger.addIterm("motors_pos_cur", model_nv - 6);
     logger.addIterm("motors_vel_cur", model_nv - 6);
-    logger.addIterm("rpy", 3);
-    logger.addIterm("fL", 3);
-    logger.addIterm("fR", 3);
-    logger.addIterm("basePos", 3);
-    logger.addIterm("baseLinVel", 3);
-    logger.addIterm("baseAcc", 3);
-    logger.addIterm("baseAngVel", 3);
+    logger.addIterm("motors_tor_cur", model_nv - 6);
+    logger.addIterm("motors_tor_out", model_nv - 6);
     logger.finishItermAdding();
 
     // stage time
+    double startStandTime = 5;
     double startSteppingTime = 60;
     double startWalkingTime = 120;
-    auto startTime = std::chrono::steady_clock::now();
-    auto wakeUpTime = startTime + std::chrono::duration_cast<std::chrono::steady_clock::duration>(std::chrono::duration<double>(timestep));
 
     // reset pvt controller
     hw_interface.updateSensorValues();
     hw_interface.dataBusWrite(RobotState);
     pvtCtr.motor_pos_des_old = RobotState.motors_pos_cur;
 
+    // loop rate
+    Rate rate(1 / timestep);
+
     while (true)
     {
-        auto currentTime = std::chrono::duration<double>(std::chrono::steady_clock::now() - startTime).count();
+        double currentTime = rate.now();
         if (currentTime > startSteppingTime) {
             break;
         }
 
+        // update sensor values
         hw_interface.updateSensorValues();
         hw_interface.dataBusWrite(RobotState);
 
@@ -146,7 +143,9 @@ int main(int argc, const char** argv)
         WBC_solv.dataBusWrite(RobotState);
 
         // get the final joint command
-        if (currentTime <= startSteppingTime) {
+        if (currentTime <= startStandTime) {
+            RobotState.motors_pos_des.assign(11, 0);
+        } else if (currentTime <= startSteppingTime) {
             RobotState.motors_pos_des = eigen2std(resLeg.jointPosRes);
         } else {
             // RobotState.wbc_delta_q_final = Eigen::VectorXd::Zero(mj_model->nv);
@@ -178,20 +177,15 @@ int main(int argc, const char** argv)
         hw_interface.setMotorsTorque(RobotState.motors_tor_out);
 
         logger.startNewLine();
-        logger.recItermData("simTime", currentTime);
+        logger.recItermData("time", currentTime);
+        logger.recItermData("frequency", rate.frequency());
         logger.recItermData("motors_pos_cur",RobotState.motors_pos_cur);
         logger.recItermData("motors_vel_cur",RobotState.motors_vel_cur);
-        logger.recItermData("rpy",RobotState.rpy);
-        logger.recItermData("fL",RobotState.fL);
-        logger.recItermData("fR",RobotState.fR);
-        logger.recItermData("basePos",RobotState.basePos);
-        logger.recItermData("baseLinVel",RobotState.baseLinVel);
-        logger.recItermData("baseAcc",RobotState.baseAcc);
-        logger.recItermData("baseAngVel",RobotState.baseAngVel);
+        logger.recItermData("motors_tor_cur",RobotState.motors_tor_cur);
+        logger.recItermData("motors_tor_out",RobotState.motors_tor_out);
         logger.finishLine();
 
-        std::this_thread::sleep_until(wakeUpTime);
-        wakeUpTime += std::chrono::duration_cast<std::chrono::steady_clock::duration>(std::chrono::duration<double>(timestep));
+        rate.sleep();
     }
     return 0;
 }
