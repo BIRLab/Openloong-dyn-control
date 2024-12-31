@@ -8,7 +8,7 @@ mkdir build install
 
 # build project
 cd build
-cmake ..
+cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=on
 cmake --build . --target main -- -j$(nproc)
 
 # install project
