@@ -2,6 +2,7 @@
 #define __SCHEDULER_H__
 
 #define WAKEUP_TIME_HISTORY_SIZE 100
+#define WAKEUP_TIME_HISTORY_MINSIZE 2
 
 #include <thread>
 #include <chrono>
@@ -25,9 +26,9 @@ public:
     }
 
     double frequency() {
-        if (history.size() < 2)
+        if (history.size() < WAKEUP_TIME_HISTORY_MINSIZE)
             return 0;
-        return history.size() / std::chrono::duration<double>(history.back() - history.front()).count();
+        return (history.size() - 1) / std::chrono::duration<double>(history.back() - history.front()).count();
     }
 
 private:
