@@ -17,6 +17,7 @@ MJ_Interface::MJ_Interface(mjModel *mj_modelIn, mjData *mj_dataIn) {
     jntId_dctl.assign(jointNum,0);
     motor_pos.assign(jointNum,0);
     motor_vel.assign(jointNum,0);
+    motor_tor.assign(jointNum,0);
     motor_pos_Old.assign(jointNum,0);
     for (int i=0;i<jointNum;i++)
     {
@@ -80,13 +81,16 @@ void MJ_Interface::updateSensorValues() {
 }
 
 void MJ_Interface::setMotorsTorque(std::vector<double> &tauIn) {
-    for (int i=0;i<jointNum;i++)
-        mj_data->ctrl[i]=tauIn.at(i);
+    for (int i=0;i<jointNum;i++) {
+        mj_data->ctrl[i] = tauIn.at(i);
+        motor_tor[i] = tauIn.at(i);
+    }
 }
 
 void MJ_Interface::dataBusWrite(DataBus &busIn) {
     busIn.motors_pos_cur=motor_pos;
     busIn.motors_vel_cur=motor_vel;
+    busIn.motors_tor_cur=motor_tor;
     busIn.rpy[0]=rpy[0];
     busIn.rpy[1]=rpy[1];
     busIn.rpy[2]=rpy[2];
