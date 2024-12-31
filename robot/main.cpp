@@ -145,8 +145,12 @@ int main(int argc, const char** argv)
         // get the final joint command
         if (currentTime <= startStandTime) {
             RobotState.motors_pos_des.assign(11, 0);
+            RobotState.motors_vel_des.assign(11, 0);
+            RobotState.motors_tor_des.assign(11, 0);
         } else if (currentTime <= startSteppingTime) {
             RobotState.motors_pos_des = eigen2std(resLeg.jointPosRes);
+            RobotState.motors_vel_des.assign(11, 0);
+            RobotState.motors_tor_des.assign(11, 0);
         } else {
             // RobotState.wbc_delta_q_final = Eigen::VectorXd::Zero(mj_model->nv);
             Eigen::VectorXd pos_des = kinDynSolver.integrateDIY(
@@ -164,7 +168,7 @@ int main(int argc, const char** argv)
         pvtCtr.dataBusRead(RobotState);
         if (currentTime <= startSteppingTime)
         {
-          pvtCtr.calMotorsPVT(100.0 / 1000.0 / 180.0 * 3.1415);
+          pvtCtr.calMotorsPVT(10.0 * timestep / 180.0 * 3.1415);
         } else {
             pvtCtr.setJointPD(100, 10, "J_ankle_l_pitch");
             pvtCtr.setJointPD(100, 10, "J_ankle_r_pitch");
