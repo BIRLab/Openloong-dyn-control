@@ -13,6 +13,8 @@ vel = data[:, 13:24]
 tor = data[:, 24:35]
 cmd = data[:, 35:46]
 
+r[r == 0] = np.nan
+
 fig1, axes = plt.subplots(2, 2)
 
 axes[0][0].set_title('position')
@@ -35,6 +37,7 @@ fig1.legend(handles, labels)
 
 fig2, ax = plt.subplots()
 ax.plot(t, r)
+ax.grid(True)
 ax.set_title('frequency')
 
 plt.show()
