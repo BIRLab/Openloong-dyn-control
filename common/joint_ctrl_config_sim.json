@@ -1,0 +1,102 @@
+{
+  "J_hip_l_roll" : {
+    "PVT_LPF_Fc" : 50,
+    "kd" : 100.0,
+    "kp" : 800.0,
+    "maxPos" : 0.43633,
+    "maxSpeed" : 20.94,
+    "maxTorque" : 320.0,
+    "minPos" : -0.17453
+  },
+  "J_hip_l_yaw" : {
+    "PVT_LPF_Fc" : 50,
+    "kd" : 100.0,
+    "kp" : 800.0,
+    "maxPos" : 0.69813,
+    "maxSpeed" : 19.63,
+    "maxTorque" : 160.0,
+    "minPos" : -0.69813
+  },
+  "J_hip_l_pitch" : {
+    "PVT_LPF_Fc" : 50,
+    "kd" : 100.0,
+    "kp" : 800.0,
+    "maxPos" : 1.83260,
+    "maxSpeed" : 19.16,
+    "maxTorque" : 396,
+    "minPos" : -0.78540
+  },
+  "J_knee_l_pitch" : {
+    "PVT_LPF_Fc" : 50,
+    "kd" : 200.0,
+    "kp" : 2000.0,
+    "maxPos" : 0.08727,
+    "maxSpeed" : 19.16,
+    "maxTorque" : 396.0,
+    "minPos" : -2.35619
+  },
+  "J_ankle_l_pitch" : {
+    "PVT_LPF_Fc" : 20,
+    "kd" : 160.0,
+    "kp" : 1000.0,
+    "maxPos" : 0.61087,
+    "maxSpeed" : 48.8,
+    "maxTorque" : 58.5,
+    "minPos" : -0.43644
+  },
+
+  "J_hip_r_roll" : {
+    "PVT_LPF_Fc" : 50,
+    "kd" : 100.0,
+    "kp" : 800.0,
+    "maxPos" : 0.43633,
+    "maxSpeed" : 20.94,
+    "maxTorque" : 320.0,
+    "minPos" : -0.17453
+  },
+  "J_hip_r_yaw" : {
+    "PVT_LPF_Fc" : 50,
+    "kd" : 100.0,
+    "kp" : 800.0,
+    "maxPos" : 0.69813,
+    "maxSpeed" : 19.63,
+    "maxTorque" : 160.0,
+    "minPos" : -0.69813
+  },
+  "J_hip_r_pitch" : {
+    "PVT_LPF_Fc" : 50,
+    "kd" : 100.0,
+    "kp" : 800.0,
+    "maxPos" : 1.83260,
+    "maxSpeed" : 19.16,
+    "maxTorque" : 396.0,
+    "minPos" : -0.78540
+  },
+  "J_knee_r_pitch" : {
+    "PVT_LPF_Fc" : 50,
+    "kd" : 200.0,
+    "kp" : 2000.0,
+    "maxPos" : 0.08727,
+    "maxSpeed" : 19.16,
+    "maxTorque" : 396.0,
+    "minPos" : -2.35619
+  },
+  "J_ankle_r_pitch" : {
+    "PVT_LPF_Fc" : 20,
+    "kd" : 160.0,
+    "kp" : 1000.0,
+    "maxPos" : 0.61087,
+    "maxSpeed" : 48.8,
+    "maxTorque" : 58.5,
+    "minPos" : -0.43633
+  },
+  "J_waist_yaw" : {
+    "PVT_LPF_Fc" : 50,
+    "kd" : 100.0,
+    "kp" : 1000.0,
+    "maxPos" : 0.7854,
+    "maxSpeed" : 5.92,
+    "maxTorque" : 121.0,
+    "minPos" : -0.7854
+  }
+}

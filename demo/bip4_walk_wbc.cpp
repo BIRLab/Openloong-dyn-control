@@ -36,7 +36,7 @@ int main(int argc, const char** argv)
     DataBus RobotState(kinDynSolver.model_nv); // data bus
     WBC_priority WBC_solv(kinDynSolver.model_nv, 18, 22, 0.7, mj_model->opt.timestep); // WBC solver
     GaitScheduler gaitScheduler(0.4, mj_model->opt.timestep); // gait scheduler
-    PVT_Ctr pvtCtr(mj_model->opt.timestep,"../common/joint_ctrl_config.json");// PVT joint control
+    PVT_Ctr pvtCtr(mj_model->opt.timestep,"../common/joint_ctrl_config_sim.json");// PVT joint control
     FootPlacement footPlacement; // foot-placement planner
     JoyStickInterpreter jsInterp(mj_model->opt.timestep); // desired baselink velocity generator
     DataLogger logger("../record/datalog.log"); // data logger
