@@ -3,7 +3,7 @@ options:
 
 master:
   node_id: 50
-  sync_period: 1000
+  sync_period: 2000
 
 defaults:
   dcf: "zeroerr.eds"
