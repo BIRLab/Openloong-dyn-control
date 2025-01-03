@@ -1,8 +1,8 @@
 {
    "J_hip_l_roll" : {
       "PVT_LPF_Fc" : 50,
-      "kd" : 5.0,
-      "kp" : 50.0,
+      "kd" : 10.0,
+      "kp" : 160.0,
       "maxPos" : 0.43633,
       "maxSpeed" : 20.94,
       "maxTorque" : 320.0,
@@ -11,7 +11,7 @@
    "J_hip_l_yaw" : {
       "PVT_LPF_Fc" : 50,
       "kd" : 5.0,
-      "kp" : 50.0,
+      "kp" : 45.0,
       "maxPos" : 0.69813,
       "maxSpeed" : 19.63,
       "maxTorque" : 160.0,
@@ -19,8 +19,8 @@
    },
    "J_hip_l_pitch" : {
       "PVT_LPF_Fc" : 50,
-      "kd" : 5.0,
-      "kp" : 50.0,
+      "kd" : 15.0,
+      "kp" : 200.0,
       "maxPos" : 1.83260,
       "maxSpeed" : 19.16,
       "maxTorque" : 396,
@@ -28,8 +28,8 @@
    },
    "J_knee_l_pitch" : {
       "PVT_LPF_Fc" : 50,
-      "kd" : 5.0,
-      "kp" : 50.0,
+      "kd" : 20.0,
+      "kp" : 220.0,
       "maxPos" : 0.08727,
       "maxSpeed" : 19.16,
       "maxTorque" : 396.0,
@@ -37,8 +37,8 @@
    },   
    "J_ankle_l_pitch" : {
       "PVT_LPF_Fc" : 20,
-      "kd" : 5.0,
-      "kp" : 50.0,
+      "kd" : 10.0,
+      "kp" : 100.0,
       "maxPos" : 0.61087,
       "maxSpeed" : 48.8,
       "maxTorque" : 58.5,
@@ -47,8 +47,8 @@
 
    "J_hip_r_roll" : {
       "PVT_LPF_Fc" : 50,
-      "kd" : 5.0,
-      "kp" : 50.0,
+      "kd" : 10.0,
+      "kp" : 160.0,
       "maxPos" : 0.43633,
       "maxSpeed" : 20.94,
       "maxTorque" : 320.0,
@@ -57,7 +57,7 @@
    "J_hip_r_yaw" : {
       "PVT_LPF_Fc" : 50,
       "kd" : 5.0,
-      "kp" : 50.0,
+      "kp" : 30.0,
       "maxPos" : 0.69813,
       "maxSpeed" : 19.63,
       "maxTorque" : 160.0,
@@ -65,8 +65,8 @@
    },
    "J_hip_r_pitch" : {
       "PVT_LPF_Fc" : 50,
-      "kd" : 5.0,
-      "kp" : 50.0,
+      "kd" : 15.0,
+      "kp" : 200.0,
       "maxPos" : 1.83260,
       "maxSpeed" : 19.16,
       "maxTorque" : 396.0,
@@ -74,8 +74,8 @@
    },
    "J_knee_r_pitch" : {
       "PVT_LPF_Fc" : 50,
-      "kd" : 5.0,
-      "kp" : 50.0,
+      "kd" : 20.0,
+      "kp" : 220.0,
       "maxPos" : 0.08727,
       "maxSpeed" : 19.16,
       "maxTorque" : 396.0,
@@ -83,8 +83,8 @@
    },
       "J_ankle_r_pitch" : {
       "PVT_LPF_Fc" : 20,
-      "kd" : 5.0,
-      "kp" : 50.0,
+      "kd" : 15.0,
+      "kp" : 100.0,
       "maxPos" : 0.61087,
       "maxSpeed" : 48.8,
       "maxTorque" : 58.5,
@@ -92,8 +92,8 @@
    },
       "J_waist_yaw" : {
       "PVT_LPF_Fc" : 50,
-      "kd" : 5.0,
-      "kp" : 50.0,
+      "kd" : 20.0,
+      "kp" : 110.0,
       "maxPos" : 0.7854,
       "maxSpeed" : 5.92,
       "maxTorque" : 191.0,

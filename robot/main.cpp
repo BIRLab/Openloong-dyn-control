@@ -38,11 +38,11 @@ int main(int argc, const char** argv)
     int model_nv = kinDynSolver.model_nv;
 
     // ini position and posture for foot-end and hand
-    Eigen::Vector3d fe_l_pos_L_des={-0.01, 0.085, -stand_legLength};
-    Eigen::Vector3d fe_r_pos_L_des={-0.01, -0.085, -stand_legLength};
+    Eigen::Vector3d fe_l_pos_L_des={0.01, 0.085, -stand_legLength};
+    Eigen::Vector3d fe_r_pos_L_des={0.012, -0.085, -stand_legLength - 0.004};
 
-    Eigen::Vector3d fe_l_eul_L_des={-0.000, -0.008, -0.000};
-    Eigen::Vector3d fe_r_eul_L_des={0.000, -0.008, 0.000};
+    Eigen::Vector3d fe_l_eul_L_des={0.000, 0.001, 0.000};
+    Eigen::Vector3d fe_r_eul_L_des={0.000, 0.00, 0.000};
     Eigen::Matrix3d fe_l_rot_des= eul2Rot(fe_l_eul_L_des(0),fe_l_eul_L_des(1),fe_l_eul_L_des(2));
     Eigen::Matrix3d fe_r_rot_des= eul2Rot(fe_r_eul_L_des(0),fe_r_eul_L_des(1),fe_r_eul_L_des(2));
 
@@ -168,7 +168,7 @@ int main(int argc, const char** argv)
         pvtCtr.dataBusRead(RobotState);
         if (currentTime <= startSteppingTime)
         {
-          pvtCtr.calMotorsPVT(10.0 * timestep / 180.0 * 3.1415);
+          pvtCtr.calMotorsPVT(60.0 * timestep / 180.0 * 3.1415);
         } else {
             pvtCtr.setJointPD(100, 10, "J_ankle_l_pitch");
             pvtCtr.setJointPD(100, 10, "J_ankle_r_pitch");
