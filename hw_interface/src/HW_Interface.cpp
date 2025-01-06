@@ -21,6 +21,7 @@ public:
     void dataBusWrite(DataBus &busIn) {
         m.dataBusWrite(busIn);
         t.dataBusWrite(busIn);
+        busIn.updateQ();
     }
 
 private:
