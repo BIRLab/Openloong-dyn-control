@@ -81,6 +81,9 @@ buses:
     - { node_id: 11, global_id: 10, encoder: 524288, offset: 262143, reverse: false }
 
 transforms:
-  t265_to_base_link:
-    rpy: [0.0, 0.0, 0.0]
-    xyz: [0.0, 0.0, 0.0]
+  camera_odometry_to_odometry:
+    rpy: [1.57, 0.0, -1.57]
+    xyz: [0.077, 0.00922, 1.0]
+  camera_to_base_link:
+    rpy: [1.57, 0.0, -1.57]
+    xyz: [0.077, 0.00922, 0.0]

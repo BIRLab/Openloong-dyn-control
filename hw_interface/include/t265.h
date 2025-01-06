@@ -18,7 +18,8 @@ private:
     rs2::pipeline pipe;
 
     // transform
-    const Eigen::Matrix4f camera_to_base_link;
+    const Eigen::Isometry3f camera_odometry_to_odometry;
+    const Eigen::Isometry3f camera_to_base_link;
 
     // camera feedback
     std::mutex data_mutex;
@@ -33,10 +34,9 @@ private:
     Eigen::Vector3f base_translation;
     Eigen::Vector3f base_velocity;
     Eigen::Vector3f base_acceleration;
-    Eigen::Quaternionf base_rotation;
+    Eigen::Vector3f base_rpy;
     Eigen::Vector3f base_angular_velocity;
     Eigen::Vector3f base_angular_acceleration;
-    Eigen::Vector3f base_rpy;
 
     void frame_cb(const rs2::frame& frame);
 };

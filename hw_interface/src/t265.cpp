@@ -48,7 +48,7 @@ static bool device_with_streams(const std::vector <rs2_stream>& stream_requests,
     return false;
 }
 
-T265::T265() : ready{false}, camera_to_base_link{Transforms::t265_to_base_link} {
+T265::T265() : ready{false}, camera_odometry_to_odometry{Transforms::camera_odometry_to_odometry}, camera_to_base_link{Transforms::camera_to_base_link} {
     std::string serial;
     assert(device_with_streams({ RS2_STREAM_POSE}, serial) || !fprintf(stderr, "T265 not found!\n"));
 
@@ -74,17 +74,23 @@ void T265::wait_ready() const {
 void T265::updateSensorValues() {
     std::scoped_lock<std::mutex> lock { data_mutex };
 
-    Eigen::Matrix3f R_camera_to_base_link = camera_to_base_link.block<3, 3>(0, 0);
-    Eigen::Vector3f t_camera_to_base_link = camera_to_base_link.block<3, 1>(0, 3);
-    Eigen::Quaternionf q_camera_to_base_link(R_camera_to_base_link);
+    Eigen::Isometry3f camera_to_camera_odometry = Eigen::Isometry3f::Identity();
+    camera_to_camera_odometry.translation() = translation;
+    camera_to_camera_odometry.linear() = rotation.toRotationMatrix();
 
-    base_translation = R_camera_to_base_link * translation + t_camera_to_base_link;
-    base_velocity = R_camera_to_base_link * velocity;
-    base_acceleration = R_camera_to_base_link * acceleration;
-    base_rotation = q_camera_to_base_link * rotation;
-    base_angular_velocity = R_camera_to_base_link * angular_velocity;
-    base_angular_acceleration = R_camera_to_base_link * angular_acceleration;
-    base_rpy = base_rotation.toRotationMatrix().eulerAngles(0, 1, 2);
+    Eigen::Isometry3f base_link_to_odometry = camera_odometry_to_odometry * camera_to_camera_odometry * camera_to_base_link.inverse();
+
+    // In world frame
+    base_translation = base_link_to_odometry.translation();
+    base_rpy = base_link_to_odometry.linear().eulerAngles(0, 1, 2);
+
+    Eigen::Matrix3f R_camera_odometry_to_base_link = camera_to_base_link.linear() * camera_to_camera_odometry.linear().transpose();
+
+    // In body frame
+    base_velocity = R_camera_odometry_to_base_link * velocity;
+    base_acceleration = R_camera_odometry_to_base_link * acceleration;
+    base_angular_velocity = R_camera_odometry_to_base_link * angular_velocity;
+    base_angular_acceleration = R_camera_odometry_to_base_link * angular_acceleration;
 }
 
 void T265::dataBusWrite(DataBus &busIn) {
@@ -109,8 +115,6 @@ void T265::dataBusWrite(DataBus &busIn) {
     busIn.baseAngVel[0] = base_angular_velocity[0];
     busIn.baseAngVel[1] = base_angular_velocity[1];
     busIn.baseAngVel[2] = base_angular_velocity[2];
-
-    busIn.updateQ();
 }
 
 void T265::frame_cb(const rs2::frame& frame) {
