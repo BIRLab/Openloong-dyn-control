@@ -62,9 +62,8 @@ int main(int argc, const char** argv)
     logger.finishItermAdding();
 
     // stage time
-    double startStandTime = 5;
-    double startSteppingTime = 60;
-    double startWalkingTime = 120;
+    double startStandTime = 20;
+    double startWalkingTime = 60;
 
     // reset pvt controller
     hw_interface.updateSensorValues();
@@ -72,12 +71,23 @@ int main(int argc, const char** argv)
     pvtCtr.motor_pos_des_old = RobotState.motors_pos_cur;
 
     // loop rate
-    Rate rate(1 / timestep);
+    scheduler::Rate rate(1 / timestep);
+    scheduler::FrequencyMonitor frequency(rate, 100);
+
+    scheduler::Once(rate, 0, [](){ std::cout << "start" << std::endl; });
+    scheduler::Once(rate, startStandTime - 3, [](){ std::cout << "stand (3)" << std::endl; });
+    scheduler::Once(rate, startStandTime - 2, [](){ std::cout << "stand (2)" << std::endl; });
+    scheduler::Once(rate, startStandTime - 1, [](){ std::cout << "stand (1)" << std::endl; });
+    scheduler::Once(rate, startStandTime, [](){ std::cout << "stand" << std::endl; });
+    scheduler::Once(rate, startWalkingTime - 3, [](){ std::cout << "walk (3)" << std::endl; });
+    scheduler::Once(rate, startWalkingTime - 2, [](){ std::cout << "walk (2)" << std::endl; });
+    scheduler::Once(rate, startWalkingTime - 1, [](){ std::cout << "walk (1)" << std::endl; });
+    scheduler::Once(rate, startWalkingTime, [](){ std::cout << "walk" << std::endl; });
 
     while (true)
     {
         double currentTime = rate.now();
-        if (currentTime > startSteppingTime) {
+        if (currentTime > startWalkingTime) {
             break;
         }
 
@@ -102,7 +112,7 @@ int main(int argc, const char** argv)
         RobotState.js_pos_des(2) = stand_legLength + foot_height; // pos z is not assigned in jyInterp
         jsInterp.dataBusWrite(RobotState); // only pos x, pos y, theta z, vel x, vel y , omega z are rewrote.
 
-        if (currentTime >= startSteppingTime) {
+        if (currentTime >= startStandTime) {
             // gait scheduler
             gaitScheduler.dataBusRead(RobotState);
             gaitScheduler.step();
@@ -144,10 +154,6 @@ int main(int argc, const char** argv)
 
         // get the final joint command
         if (currentTime <= startStandTime) {
-            RobotState.motors_pos_des.assign(11, 0);
-            RobotState.motors_vel_des.assign(11, 0);
-            RobotState.motors_tor_des.assign(11, 0);
-        } else if (currentTime <= startSteppingTime) {
             RobotState.motors_pos_des = eigen2std(resLeg.jointPosRes);
             RobotState.motors_vel_des.assign(11, 0);
             RobotState.motors_tor_des.assign(11, 0);
@@ -166,23 +172,23 @@ int main(int argc, const char** argv)
 
         // ------------- pvt ------------
         pvtCtr.dataBusRead(RobotState);
-        if (currentTime <= startSteppingTime)
+        if (currentTime <= startStandTime)
         {
           pvtCtr.calMotorsPVT(60.0 * timestep / 180.0 * 3.1415);
         } else {
-            pvtCtr.setJointPD(100, 10, "J_ankle_l_pitch");
-            pvtCtr.setJointPD(100, 10, "J_ankle_r_pitch");
-            pvtCtr.setJointPD(1000, 100, "J_knee_l_pitch");
-            pvtCtr.setJointPD(1000, 100, "J_knee_r_pitch");
+            // pvtCtr.setJointPD(100, 10, "J_ankle_l_pitch");
+            // pvtCtr.setJointPD(100, 10, "J_ankle_r_pitch");
+            // pvtCtr.setJointPD(1000, 100, "J_knee_l_pitch");
+            // pvtCtr.setJointPD(1000, 100, "J_knee_r_pitch");
             pvtCtr.calMotorsPVT();
         }
         pvtCtr.dataBusWrite(RobotState);
 
-        hw_interface.setMotorsTorque(RobotState.motors_tor_out);
+        // hw_interface.setMotorsTorque(RobotState.motors_tor_out);
 
         logger.startNewLine();
         logger.recItermData("time", currentTime);
-        logger.recItermData("frequency", rate.frequency());
+        logger.recItermData("frequency", frequency());
         logger.recItermData("motors_pos_cur",RobotState.motors_pos_cur);
         logger.recItermData("motors_vel_cur",RobotState.motors_vel_cur);
         logger.recItermData("motors_tor_cur",RobotState.motors_tor_cur);
