@@ -45,7 +45,7 @@ public:
         }
     }
 
-    double now() const noexcept {
+    [[nodiscard]] double now() const noexcept {
         return std::chrono::duration<double>(std::chrono::steady_clock::now() - begin_).count();
     }
 
@@ -71,17 +71,18 @@ private:
     std::mutex postsleep_hook_mutex_;
 };
 
-class HookHelper : public std::enable_shared_from_this<HookHelper> {
+template <typename T>
+class HookHelper : public std::enable_shared_from_this<HookHelper<T>> {
 public:
-    template <typename T, typename... Args>
+    template <typename... Args>
     static std::shared_ptr<T> create(Args... args) {
         static_assert(std::is_base_of<HookHelper, T>::value, "T must derive from HookHelper");
         return std::make_shared<T>(std::forward<Args>(args)...);
     }
 
     void register_hooks(Rate& rate) noexcept {
-        rate.register_presleep_hook(PresleepHook_ { shared_from_this() });
-        rate.register_postsleep_hook(PostsleepHook_ { shared_from_this() });
+        rate.register_presleep_hook(PresleepHook_ { this->shared_from_this() });
+        rate.register_postsleep_hook(PostsleepHook_ { this->shared_from_this() });
     }
 
 protected:
@@ -113,7 +114,7 @@ private:
     };
 };
 
-class FrequencyMonitorHelper : public HookHelper {
+class FrequencyMonitorHelper : public HookHelper<FrequencyMonitorHelper> {
 public:
     explicit FrequencyMonitorHelper(const size_t history_size) : history_size_(history_size), is_alive_(true) { }
 
@@ -147,7 +148,7 @@ private:
 class FrequencyMonitor {
 public:
     explicit FrequencyMonitor(Rate& rate, const size_t history_size) {
-        helper_ = HookHelper::create<FrequencyMonitorHelper>(history_size);
+        helper_ = FrequencyMonitorHelper::create(history_size);
         helper_->register_hooks(rate);
     }
 
@@ -163,9 +164,9 @@ private:
     std::shared_ptr<FrequencyMonitorHelper> helper_;
 };
 
-class OnceHelper : public HookHelper {
+class OnceHelper : public HookHelper<OnceHelper> {
 public:
-    explicit OnceHelper(const double time, const std::function<void()> callable) : time_(time), callable_(std::move(callable)) { }
+    explicit OnceHelper(const double time, const std::function<void()>& callable) : time_(time), callable_(callable) { }
 
 private:
     const double time_;
@@ -189,13 +190,45 @@ private:
     }
 };
 
-class Once {
+class IntervalHelper : public HookHelper<IntervalHelper> {
 public:
-    explicit Once(Rate& rate, const double time, const std::function<void()>& callable) {
-        std::shared_ptr<OnceHelper> once = HookHelper::create<OnceHelper>(time, callable);
-        once->register_hooks(rate);
+    explicit IntervalHelper(const double time, const std::function<void()>& callable) : time_(time), callable_(callable), last_(time) { }
+
+private:
+    const double time_;
+    const std::function<void()> callable_;
+    double last_;
+
+    bool on_presleep_(const double current) override {
+        if (current - last_ > time_) {
+            callable_();
+            last_ = last_ + time_;
+        }
+        return true;
+    }
+
+    bool on_postsleep_(const double current) override {
+        if (current - last_ > time_) {
+            callable_();
+            last_ = last_ + time_;
+        }
+        return true;
     }
 };
+
+template <typename T, typename... Args>
+void CreateHelper(Rate& rate, Args&&... args) {
+    std::shared_ptr<T> helper = T::create(std::forward<Args>(args)...);
+    helper->register_hooks(rate);
+}
+
+inline void Once(Rate& rate, const double time, const std::function<void()>& callable) {
+    CreateHelper<OnceHelper>(rate, time, callable);
+}
+
+inline void Interval(Rate& rate, const double time, const std::function<void()>& callable) {
+    CreateHelper<IntervalHelper>(rate, time, callable);
+}
 
 } // namespace scheduler
 
