@@ -9,7 +9,7 @@
 #include "joystick_interpreter.h"
 #include "scheduler.h"
 
-const double timestep = 2e-3;
+const double timestep = 1e-3;
 
 int main(int argc, const char** argv)
 {
@@ -87,7 +87,7 @@ int main(int argc, const char** argv)
     while (true)
     {
         double currentTime = rate.now();
-        if (currentTime > startWalkingTime) {
+        if (currentTime > startStandTime) {
             break;
         }
 
@@ -153,7 +153,11 @@ int main(int argc, const char** argv)
         WBC_solv.dataBusWrite(RobotState);
 
         // get the final joint command
-        if (currentTime <= startStandTime) {
+        if (currentTime <= 5) {
+            RobotState.motors_pos_des.assign(11, 0);
+            RobotState.motors_vel_des.assign(11, 0);
+            RobotState.motors_tor_des.assign(11, 0);
+        } else if (currentTime <= startStandTime) {
             RobotState.motors_pos_des = eigen2std(resLeg.jointPosRes);
             RobotState.motors_vel_des.assign(11, 0);
             RobotState.motors_tor_des.assign(11, 0);
@@ -184,7 +188,7 @@ int main(int argc, const char** argv)
         }
         pvtCtr.dataBusWrite(RobotState);
 
-        // hw_interface.setMotorsTorque(RobotState.motors_tor_out);
+        hw_interface.setMotorsTorque(RobotState.motors_tor_out);
 
         logger.startNewLine();
         logger.recItermData("time", currentTime);
