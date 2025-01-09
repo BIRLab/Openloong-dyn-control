@@ -14,8 +14,8 @@ public:
         t.updateSensorValues();
     }
 
-    void setMotorsTorque(std::vector<double> &tauIn) {
-        m.setMotorsTorque(tauIn);
+    void setMotorsPVT(const DataBus &busIn) {
+        m.setMotorsPVT(busIn);
     }
 
     void dataBusWrite(DataBus &busIn) {
@@ -39,8 +39,12 @@ void HW_Interface::updateSensorValues() {
     i->updateSensorValues();
 }
 
-void HW_Interface::setMotorsTorque(std::vector<double> &tauIn) {
-    i->setMotorsTorque(tauIn);
+[[deprecated]] void HW_Interface::setMotorsTorque(std::vector<double> &tauIn) {
+    std::cerr << "setMotorsTorque() is unsupported, please use setMotorsPVT() instead" << std::endl;
+}
+
+void HW_Interface::setMotorsPVT(const DataBus &busIn) {
+    i->setMotorsPVT(busIn);
 }
 
 void HW_Interface::dataBusWrite(DataBus &busIn) {

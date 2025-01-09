@@ -35,7 +35,13 @@ defaults:
       enabled: true
       cob_id: "auto"
       mapping:
-        - { index: 0x6071, sub_index: 0 }
+        - { index: 0x607a, sub_index: 0 }
+        - { index: 0x60b1, sub_index: 0 }
+    2:
+      enabled: true
+      cob_id: "auto"
+      mapping:
+        - { index: 0x60b2, sub_index: 0 }
 
 nodes:
   motor_1:

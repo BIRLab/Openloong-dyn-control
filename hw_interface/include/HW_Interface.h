@@ -9,6 +9,7 @@ public:
     ~HW_Interface();
     void updateSensorValues() override;
     void setMotorsTorque(std::vector<double> &tauIn) override;
+    void setMotorsPVT(const DataBus &busIn);
     void dataBusWrite(DataBus &busIn) override;
 
 private:

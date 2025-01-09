@@ -21,7 +21,7 @@ public:
     ~MotorManager();
     void wait_ready();
     void updateSensorValues();
-    void setMotorsTorque(std::vector<double> &tauIn);
+    void setMotorsPVT(const DataBus &busIn);
     void dataBusWrite(DataBus &busIn);
 
 private:

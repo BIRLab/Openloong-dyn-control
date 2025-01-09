@@ -43,9 +43,13 @@ public:
         torque_out = torque;
     }
 
-    void sendCommand(double target_torque) {
-        tpdo_mapped[0x6071][0] = (int16_t)(reverse * 1000000.0 * target_torque / rated_torque);
-        tpdo_mapped[0x6071][0].WriteEvent();
+    void sendCommand(double target_position, double velocity_offset, double torque_offset) {
+        tpdo_mapped[0x607a][0] = (int32_t)(reverse * encoder * target_position / (2 * M_PI) + offset);
+        tpdo_mapped[0x607a][0].WriteEvent();
+        tpdo_mapped[0x60b1][0] = (int32_t)(reverse * encoder * velocity_offset / (2 * M_PI));
+        tpdo_mapped[0x60b1][0].WriteEvent();
+        tpdo_mapped[0x60b2][0] = (int16_t)(reverse * 1000000.0 * torque_offset / rated_torque);
+        tpdo_mapped[0x60b2][0].WriteEvent();
     }
 
 private:
@@ -157,11 +161,11 @@ void MotorManager::updateSensorValues() {
     }
 }
 
-void MotorManager::setMotorsTorque(std::vector<double> &tauIn) {
-    for (uint8_t i = 0; i < (uint8_t)tauIn.size(); ++i) {
+void MotorManager::setMotorsPVT(const DataBus &busIn) {
+    for (uint8_t i = 0; i < (uint8_t)busIn.motors_pos_des.size(); ++i) {
         auto m = drivers.find(i);
         if (m != drivers.end()) {
-            m->second->sendCommand(tauIn[i]);
+            m->second->sendCommand(busIn.motors_pos_des[i], busIn.motors_vel_des[i], busIn.motors_tor_des[i]);
         } else {
             std::cerr << "Motor " << (int)i << " is offline." << std::endl;
         }

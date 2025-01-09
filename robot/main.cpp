@@ -19,7 +19,6 @@ int main(int argc, const char** argv)
     DataBus RobotState(kinDynSolver.model_nv);
     WBC_priority WBC_solv(kinDynSolver.model_nv, 18, 22, 0.7, timestep);
     GaitScheduler gaitScheduler(0.4, timestep);
-    PVT_Ctr pvtCtr(timestep,"../common/joint_ctrl_config.json");
     FootPlacement footPlacement;
     JoyStickInterpreter jsInterp(timestep);
     DataLogger logger("../record/datalog.log");
@@ -64,11 +63,6 @@ int main(int argc, const char** argv)
     // stage time
     double startStandTime = 20;
     double startWalkingTime = 60;
-
-    // reset pvt controller
-    hw_interface.updateSensorValues();
-    hw_interface.dataBusWrite(RobotState);
-    pvtCtr.motor_pos_des_old = RobotState.motors_pos_cur;
 
     // loop rate
     scheduler::Rate rate(1 / timestep);
@@ -175,20 +169,7 @@ int main(int argc, const char** argv)
         }
 
         // ------------- pvt ------------
-        pvtCtr.dataBusRead(RobotState);
-        if (currentTime <= startStandTime)
-        {
-          pvtCtr.calMotorsPVT(60.0 * timestep / 180.0 * 3.1415);
-        } else {
-            // pvtCtr.setJointPD(100, 10, "J_ankle_l_pitch");
-            // pvtCtr.setJointPD(100, 10, "J_ankle_r_pitch");
-            // pvtCtr.setJointPD(1000, 100, "J_knee_l_pitch");
-            // pvtCtr.setJointPD(1000, 100, "J_knee_r_pitch");
-            pvtCtr.calMotorsPVT();
-        }
-        pvtCtr.dataBusWrite(RobotState);
-
-        hw_interface.setMotorsTorque(RobotState.motors_tor_out);
+        hw_interface.setMotorsPVT(RobotState);
 
         logger.startNewLine();
         logger.recItermData("time", currentTime);
