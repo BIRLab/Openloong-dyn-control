@@ -30,7 +30,6 @@ defaults:
       transmission: 0x01
       mapping:
         - { index: 0x6077, sub_index: 0x00 }
-        - { index: 0x3b69, sub_index: 0x00 }
   rpdo:
     1:
       enabled: true
