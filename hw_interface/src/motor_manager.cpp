@@ -57,14 +57,10 @@ private:
     void OnBoot(lely::canopen::NmtState st, char es, const std::string& what) noexcept override {
         if (!es || es == 'L') {
             // boot
-            tpdo_mapped[0x6040][0] = (uint16_t)128;
-            tpdo_mapped[0x6040][0].WriteEvent();
-            tpdo_mapped[0x6040][0] = (uint16_t)6;
-            tpdo_mapped[0x6040][0].WriteEvent();
-            tpdo_mapped[0x6040][0] = (uint16_t)7;
-            tpdo_mapped[0x6040][0].WriteEvent();
-            tpdo_mapped[0x6040][0] = (uint16_t)15;
-            tpdo_mapped[0x6040][0].WriteEvent();
+            Wait(AsyncWrite<uint16_t>(0x6040, 0, 128));
+            Wait(AsyncWrite<uint16_t>(0x6040, 0, 6));
+            Wait(AsyncWrite<uint16_t>(0x6040, 0, 7));
+            Wait(AsyncWrite<uint16_t>(0x6040, 0, 15));
 
             AsyncWait(500ms).submit(master.get_executor(), [this](){
                 std::cout << CL_BOLDGREEN << "motor " << static_cast<int>(id()) << " booted successfully" << CL_RESET << std::endl;

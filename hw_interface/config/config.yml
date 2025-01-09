@@ -35,7 +35,6 @@ defaults:
       enabled: true
       cob_id: "auto"
       mapping:
-        - { index: 0x6040, sub_index: 0 }
         - { index: 0x6071, sub_index: 0 }
 
 nodes:
