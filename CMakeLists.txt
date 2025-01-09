@@ -100,12 +100,6 @@ target_link_libraries(main PRIVATE core hw_interface)
 # 输出可执行文件
 install(TARGETS main)
 
-# 输出配置文件
-install(
-    FILES "${CMAKE_CURRENT_LIST_DIR}/common/joint_ctrl_config.json"
-    DESTINATION "common"
-)
-
 # 输出模型和贴图文件
 install(
     DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/models/bip4_des" "${CMAKE_CURRENT_LIST_DIR}/models/asset"
