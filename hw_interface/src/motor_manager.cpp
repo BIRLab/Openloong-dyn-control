@@ -34,7 +34,6 @@ public:
         position = reverse * 2 * M_PI * (position_raw - offset) / encoder;
         velocity = reverse * 2 * M_PI * velocity_raw / encoder;
         torque = reverse * (double)torque_raw * (double)rated_torque / 1000000.0;
-        // torque = reverse * (double)torque_sensor_raw / 1000.0;
     }
 
     void readFeedback(double& position_out, double& velocity_out, double& torque_out) {
@@ -54,7 +53,6 @@ private:
     int32_t position_raw{};
     int32_t velocity_raw{};
     int16_t torque_raw{};
-    int32_t torque_sensor_raw{};
 
     void OnBoot(lely::canopen::NmtState st, char es, const std::string& what) noexcept override {
         if (!es || es == 'L') {
@@ -112,10 +110,6 @@ private:
             case 0x6077:
                 // Torque actual value
                 torque_raw = rpdo_mapped[0x6077][0];
-                break;
-            case 0x3B69:
-                // Torque sensor
-                torque_sensor_raw = rpdo_mapped[0x3B69][0];
                 break;
             default:
                 break;
