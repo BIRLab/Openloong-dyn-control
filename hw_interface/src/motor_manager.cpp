@@ -60,6 +60,9 @@ private:
 
     void OnBoot(lely::canopen::NmtState st, char es, const std::string& what) noexcept override {
         if (!es || es == 'L') {
+            // reset target position
+            Wait(AsyncWrite(0x607a, 0, Wait(AsyncRead<uint32_t>(0x6064, 0))));
+
             // boot
             Wait(AsyncWrite<uint16_t>(0x6040, 0, 128));
             Wait(AsyncWrite<uint16_t>(0x6040, 0, 6));
