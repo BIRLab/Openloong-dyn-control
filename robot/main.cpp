@@ -62,6 +62,7 @@ int main(int argc, const char** argv)
     logger.finishItermAdding();
 
     // stage time
+    double startInitialTime = 5;
     double startStandTime = 20;
     double startWalkingTime = 60;
 
@@ -75,10 +76,16 @@ int main(int argc, const char** argv)
     scheduler::FrequencyMonitor frequency(rate, 100);
 
     scheduler::Once(rate, 0, [](){ std::cout << "start" << std::endl; });
+    scheduler::Once(rate, startInitialTime - 3, [](){ std::cout << "initial (3)" << std::endl; });
+    scheduler::Once(rate, startInitialTime - 2, [](){ std::cout << "initial (2)" << std::endl; });
+    scheduler::Once(rate, startInitialTime - 1, [](){ std::cout << "initial (1)" << std::endl; });
+    scheduler::Once(rate, startInitialTime, [](){ std::cout << "initial" << std::endl; });
+    scheduler::Once(rate, startStandTime - 10, [](){ std::cout << "stand (10)" << std::endl; });
     scheduler::Once(rate, startStandTime - 3, [](){ std::cout << "stand (3)" << std::endl; });
     scheduler::Once(rate, startStandTime - 2, [](){ std::cout << "stand (2)" << std::endl; });
     scheduler::Once(rate, startStandTime - 1, [](){ std::cout << "stand (1)" << std::endl; });
     scheduler::Once(rate, startStandTime, [](){ std::cout << "stand" << std::endl; });
+    scheduler::Once(rate, startWalkingTime - 15, [](){ std::cout << "walk (15)" << std::endl; });
     scheduler::Once(rate, startWalkingTime - 3, [](){ std::cout << "walk (3)" << std::endl; });
     scheduler::Once(rate, startWalkingTime - 2, [](){ std::cout << "walk (2)" << std::endl; });
     scheduler::Once(rate, startWalkingTime - 1, [](){ std::cout << "walk (1)" << std::endl; });
@@ -153,7 +160,7 @@ int main(int argc, const char** argv)
         WBC_solv.dataBusWrite(RobotState);
 
         // get the final joint command
-        if (currentTime <= 5) {
+        if (currentTime <= startInitialTime) {
             RobotState.motors_pos_des.assign(11, 0);
             RobotState.motors_vel_des.assign(11, 0);
             RobotState.motors_tor_des.assign(11, 0);
