@@ -1,5 +1,5 @@
 #pragma once
-#include "robot_interface.h"
+#include "hw_plugin.h"
 #include <lely/ev/loop.hpp>
 #include <lely/ev/fiber_exec.hpp>
 #include <lely/io2/linux/can.hpp>
@@ -15,14 +15,14 @@
 
 class MotorDriver;
 
-class MotorManager {
+class MotorManager : public HWPlugin {
 public:
     explicit MotorManager();
     ~MotorManager();
-    void wait_ready();
-    void updateSensorValues();
-    void setMotorsTorque(std::vector<double> &tauIn);
-    void dataBusWrite(DataBus &busIn);
+    void waitReady() override;
+    void updateSensorValues() override;
+    void setMotorsTorque(std::vector<double> &tauIn) override;
+    void dataBusWrite(DataBus &busIn) override;
 
 private:
     lely::io::IoGuard io_guard;

@@ -1,17 +1,17 @@
 #pragma once
-#include "robot_interface.h"
+#include "hw_plugin.h"
 #include <Eigen/Geometry>
 #include <librealsense2/rs.hpp>
 #include <thread>
 #include <mutex>
 
-class T265 {
+class T265 : public HWPlugin {
 public:
     explicit T265();
     ~T265();
-    void wait_ready() const;
-    void updateSensorValues();
-    void dataBusWrite(DataBus &busIn);
+    void waitReady() override;
+    void updateSensorValues() override;
+    void dataBusWrite(DataBus &busIn) override;
 
 private:
     bool ready;

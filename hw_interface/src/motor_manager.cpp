@@ -157,7 +157,7 @@ MotorManager::~MotorManager() {
     loop_thread.join();
 }
 
-void MotorManager::wait_ready() {
+void MotorManager::waitReady() {
     wait_ready_state(true);
 }
 

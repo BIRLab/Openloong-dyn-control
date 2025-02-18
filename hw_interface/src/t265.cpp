@@ -64,7 +64,7 @@ T265::~T265() {
     pipe.stop();
 }
 
-void T265::wait_ready() const {
+void T265::waitReady() {
     while (!ready) {
         std::this_thread::sleep_for(10ms);
     }
