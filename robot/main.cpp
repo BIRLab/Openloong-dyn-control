@@ -4,7 +4,7 @@
 #include "data_logger.h"
 #include "scheduler.h"
 
-const double timestep = 2e-3;
+const double timestep = 1e-3;
 
 int main(int argc, const char** argv)
 {

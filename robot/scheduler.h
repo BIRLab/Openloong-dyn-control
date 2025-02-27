@@ -27,7 +27,7 @@ public:
     double frequency() {
         if (history.size() < 2)
             return 0;
-        return history.size() / std::chrono::duration<double>(history.back() - history.front()).count();
+        return (history.size() - 1) / std::chrono::duration<double>(history.back() - history.front()).count();
     }
 
 private:
