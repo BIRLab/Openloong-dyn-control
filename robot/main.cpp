@@ -8,11 +8,16 @@
 #include "foot_placement.h"
 #include "joystick_interpreter.h"
 #include "scheduler.h"
+#include "realtime_tools.h"
 
 const double timestep = 1e-3;
 
 int main(int argc, const char** argv)
 {
+    // set realtime
+    realtime_tools::try_set_realtime(20);
+    realtime_tools::try_set_nice(-5);
+
     // ini classes
     HW_Interface hw_interface;
     Pin_KinDyn kinDynSolver("../models/bip4_des/bip4_des.urdf");
