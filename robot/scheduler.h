@@ -145,6 +145,33 @@ private:
     }
 };
 
+class LatencyMonitorHelper : public HookHelper<LatencyMonitorHelper> {
+public:
+    explicit LatencyMonitorHelper() : is_alive_(true), last_(0), latency_(0) { }
+
+    double latency() noexcept {
+        std::scoped_lock<std::mutex> lock { mutex_ };
+        return latency_;
+    }
+
+    void detach() {
+        is_alive_.store(false);
+    }
+
+private:
+    std::atomic_bool is_alive_;
+    double last_;
+    double latency_;
+    std::mutex mutex_;
+
+    bool on_postsleep_(const double current) override {
+        std::scoped_lock<std::mutex> lock { mutex_ };
+        latency_ = current - last_;
+        last_ = current;
+        return is_alive_.load();
+    }
+};
+
 class FrequencyMonitor {
 public:
     explicit FrequencyMonitor(Rate& rate, const size_t history_size) {
@@ -162,6 +189,25 @@ public:
 
 private:
     std::shared_ptr<FrequencyMonitorHelper> helper_;
+};
+
+class LatencyMonitor {
+public:
+    explicit LatencyMonitor(Rate& rate) {
+        helper_ = LatencyMonitorHelper::create();
+        helper_->register_hooks(rate);
+    }
+
+    ~LatencyMonitor() {
+        helper_->detach();
+    }
+
+    double operator()() {
+        return helper_->latency();
+    }
+
+private:
+    std::shared_ptr<LatencyMonitorHelper> helper_;
 };
 
 class OnceHelper : public HookHelper<OnceHelper> {

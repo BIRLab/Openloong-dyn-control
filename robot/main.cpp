@@ -54,7 +54,7 @@ int main(int argc, const char** argv)
 
     // register variable name for data logger
     logger.addIterm("time", 1);
-    logger.addIterm("frequency", 1);
+    logger.addIterm("latency", 1);
     logger.addIterm("motors_pos_cur", model_nv - 6);
     logger.addIterm("motors_vel_cur", model_nv - 6);
     logger.addIterm("motors_tor_cur", model_nv - 6);
@@ -73,7 +73,7 @@ int main(int argc, const char** argv)
 
     // loop rate
     scheduler::Rate rate(1 / timestep);
-    scheduler::FrequencyMonitor frequency(rate, 100);
+    scheduler::LatencyMonitor latency(rate);
 
     scheduler::Once(rate, 0, [](){ std::cout << "start" << std::endl; });
     scheduler::Once(rate, startInitialTime - 3, [](){ std::cout << "initial (3)" << std::endl; });
@@ -199,7 +199,7 @@ int main(int argc, const char** argv)
 
         logger.startNewLine();
         logger.recItermData("time", currentTime);
-        logger.recItermData("frequency", frequency());
+        logger.recItermData("latency", latency());
         logger.recItermData("motors_pos_cur",RobotState.motors_pos_cur);
         logger.recItermData("motors_vel_cur",RobotState.motors_vel_cur);
         logger.recItermData("motors_tor_cur",RobotState.motors_tor_cur);
