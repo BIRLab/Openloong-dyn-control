@@ -4,33 +4,47 @@
 
 class HW_Interface::Implementation {
 public:
-    void wait_ready() {
-        m.wait_ready();
-        t.wait_ready();
+    Implementation() {
+        add_plugin<MotorManager>();
+        add_plugin<T265>();
+    }
+
+    void waitReady() {
+        for (const std::unique_ptr<HWPlugin>& p : plugins) {
+            p->waitReady();
+        }
     }
 
     void updateSensorValues() {
-        m.updateSensorValues();
-        t.updateSensorValues();
+        for (const std::unique_ptr<HWPlugin>& p : plugins) {
+            p->updateSensorValues();
+        }
     }
 
     void setMotorsTorque(std::vector<double> &tauIn) {
-        m.setMotorsTorque(tauIn);
+        for (const std::unique_ptr<HWPlugin>& p : plugins) {
+            p->setMotorsTorque(tauIn);
+        }
     }
 
     void dataBusWrite(DataBus &busIn) {
-        m.dataBusWrite(busIn);
-        t.dataBusWrite(busIn);
+        for (const std::unique_ptr<HWPlugin>& p : plugins) {
+            p->dataBusWrite(busIn);
+        }
         busIn.updateQ();
     }
 
 private:
-    MotorManager m;
-    T265 t;
+    std::vector<std::unique_ptr<HWPlugin>> plugins;
+
+    template<typename T>
+    void add_plugin() {
+        plugins.push_back(std::make_unique<T>());
+    }
 };
 
 HW_Interface::HW_Interface() : i{std::make_unique<Implementation>()} {
-    i->wait_ready();
+    i->waitReady();
 }
 
 HW_Interface::~HW_Interface() = default;
