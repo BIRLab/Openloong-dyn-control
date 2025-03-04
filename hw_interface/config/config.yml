@@ -63,7 +63,7 @@ nodes:
 
 buses:
   robot_can0:
-    - { node_id: 7, global_id: 1, encoder: 524288, offset: 262143, reverse: false }
+    - { node_id: 7, global_id: 1, encoder: 524288, offset: 262143, reverse: true }
     - { node_id: 8, global_id: 2, encoder: 524288, offset: 262143, reverse: true }
   robot_can1:
     - { node_id: 1, global_id: 5, encoder: 524288, offset: 262143, reverse: false }
@@ -71,7 +71,7 @@ buses:
   robot_can2:
     - { node_id: 3, global_id: 7, encoder: 524288, offset: 262143, reverse: false }
   robot_can3:
-    - { node_id: 2, global_id: 6, encoder: 524288, offset: 262143, reverse: false }
+    - { node_id: 2, global_id: 6, encoder: 524288, offset: 262143, reverse: true }
     - { node_id: 11, global_id: 10, encoder: 524288, offset: 262143, reverse: false }
   robot_can4:
     - { node_id: 4, global_id: 8, encoder: 524288, offset: 262143, reverse: false }
